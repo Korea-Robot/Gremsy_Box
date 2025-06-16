@@ -1,95 +1,120 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <title>Gremsy Box Control</title>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <style>
-    body { font-family: sans-serif; text-align: center; }
-    video { width: 80%; max-width: 640px; margin-bottom: 20px; }
-    .slider-container { margin: 10px auto; width: 80%; max-width: 400px; }
-    .slider-container label { display: block; margin-bottom: 5px; }
-    .slider-container input { width: 100%; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gremsy 카메라 & 짐벌 컨트롤러</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- HLS.js 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
-  <h1>Gremsy Box Control</h1>
+    <div class="container">
+        <header>
+            <h1>🎥 Gremsy Controller</h1>
+            <div class="status">
+                <span id="connection-status" class="status-indicator">연결 상태 확인 중...</span>
+                <span id="robot-ip">Robot IP: {{ robot_ip }}</span>
+            </div>
+        </header>
 
-  <!-- 비디오 플레이어 -->
-  <video id="player" controls autoplay muted></video>
+        <div class="main-content">
+            <!-- 카메라 스트림 섹션 -->
+            <div class="stream-section">
+                <h2>📹 카메라 스트림</h2>
+                <div class="stream-tabs">
+                    <button class="tab-btn active" onclick="switchStream('hls')">HLS 스트림</button>
+                    <button class="tab-btn" onclick="switchStream('webrtc')">WebRTC 스트림</button>
+                </div>
+                
+                <div class="video-container">
+                    <!-- HLS 비디오 플레이어 -->
+                    <video id="hls-player" class="video-player active" controls autoplay muted playsinline>
+                        브라우저가 HLS를 지원하지 않습니다.
+                    </video>
+                    
+                    <!-- WebRTC 비디오 플레이어 -->
+                    <video id="webrtc-player" class="video-player" controls autoplay muted playsinline>
+                        브라우저가 WebRTC를 지원하지 않습니다.
+                    </video>
+                    
+                    <!-- 스트림이 로드되지 않을 때 표시 -->
+                    <div id="stream-placeholder" class="stream-placeholder">
+                        <div class="loading-spinner"></div>
+                        <p>스트림 연결 중...</p>
+                    </div>
+                    
+                    <div class="stream-info">
+                        <div class="stream-urls">
+                            <p><strong>HLS URL:</strong> <code id="hls-url">http://{{ robot_ip }}:8888/gremsy/index.m3u8</code></p>
+                            <p><strong>WebRTC URL:</strong> <code id="webrtc-url">http://{{ robot_ip }}:8889/gremsy</code></p>
+                            <p><strong>원본 RTSP:</strong> <code id="rtsp-url">{{ rtsp_url }}</code></p>
+                        </div>
+                        <div class="stream-controls">
+                            <button onclick="refreshStream()">🔄 스트림 새로고침</button>
+                            <button onclick="openExternalPlayer()">📱 외부 플레이어로 열기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-  <!-- Yaw/Pitch 슬라이더 -->
-  <div class="slider-container">
-    <label for="yawRange">Yaw 속도: <span id="yawVal">0</span></label>
-    <input type="range" id="yawRange" min="-100" max="100" value="0">
-  </div>
+            <!-- 짐벌 컨트롤 섹션 -->
+            <div class="control-section">
+                <h2>🎮 짐벌 컨트롤</h2>
+                
+                <!-- 방향키 컨트롤 -->
+                <div class="gimbal-controls">
+                    <div class="direction-pad">
+                        <button class="dir-btn up" onmousedown="startMove('pitch', 10)" onmouseup="stopMove()">▲</button>
+                        <div class="middle-row">
+                            <button class="dir-btn left" onmousedown="startMove('yaw', -10)" onmouseup="stopMove()">◄</button>
+                            <button class="dir-btn center" onclick="stopMove()">⏹</button>
+                            <button class="dir-btn right" onmousedown="startMove('yaw', 10)" onmouseup="stopMove()">►</button>
+                        </div>
+                        <button class="dir-btn down" onmousedown="startMove('pitch', -10)" onmouseup="stopMove()">▼</button>
+                    </div>
+                </div>
 
-  <div class="slider-container">
-    <label for="pitchRange">Pitch 속도: <span id="pitchVal">0</span></label>
-    <input type="range" id="pitchRange" min="-100" max="100" value="0">
-  </div>
+                <!-- 속도 조절 -->
+                <div class="speed-control">
+                    <label for="speed-slider">이동 속도: <span id="speed-value">10</span>°/s</label>
+                    <input type="range" id="speed-slider" min="1" max="50" value="10" oninput="updateSpeed(this.value)">
+                </div>
 
-  <button id="stopBtn">정지</button>
+                <!-- 카메라 설정 -->
+                <div class="camera-settings">
+                    <h3>🎨 카메라 설정</h3>
+                    
+                    <div class="setting-group">
+                        <label for="ir-palette">IR 팔레트:</label>
+                        <select id="ir-palette" onchange="changeIRPalette(this.value)">
+                            <option value="1">팔레트 1</option>
+                            <option value="2">팔레트 2</option>
+                            <option value="3">팔레트 3</option>
+                            <option value="4">팔레트 4</option>
+                        </select>
+                    </div>
 
-  <script>
-    // 1) 스트림 정보 가져와서 HLS 재생
-    fetch('/api/stream')
-      .then(res => res.json())
-      .then(cfg => {
-        const video = document.getElementById('player');
-        if (Hls.isSupported()) {
-          const hls = new Hls();
-          hls.loadSource(cfg.hls);
-          hls.attachMedia(video);
-        } else {
-          video.src = cfg.hls;
-        }
-      });
+                    <div class="setting-group">
+                        <label for="view-src">뷰소스:</label>
+                        <select id="view-src" onchange="changeViewSrc(this.value)">
+                            <option value="1">소스 1</option>
+                            <option value="2">소스 2</option>
+                            <option value="3">소스 3</option>
+                            <option value="4">소스 4</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    // 2) 슬라이더 컨트롤
-    let yaw = 0, pitch = 0, sendTimer;
+        <!-- 로그 섹션 -->
+        <div class="log-section">
+            <h3>📋 활동 로그</h3>
+            <div id="activity-log"></div>
+        </div>
+    </div>
 
-    const yawRange   = document.getElementById('yawRange');
-    const pitchRange = document.getElementById('pitchRange');
-    const yawVal     = document.getElementById('yawVal');
-    const pitchVal   = document.getElementById('pitchVal');
-    const stopBtn    = document.getElementById('stopBtn');
-
-    function sendMove() {
-      fetch('/gimbal/continuousMove', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({yaw, pitch, roll: 0})
-      }).catch(console.error);
-    }
-
-    function scheduleSend() {
-      clearInterval(sendTimer);
-      sendTimer = setInterval(sendMove, 200);  // 200ms마다 전송
-    }
-
-    // yaw 슬라이더 이벤트
-    yawRange.addEventListener('input', () => {
-      yaw = parseInt(yawRange.value);
-      yawVal.textContent = yaw;
-      scheduleSend();
-    });
-
-    // pitch 슬라이더 이벤트
-    pitchRange.addEventListener('input', () => {
-      pitch = parseInt(pitchRange.value);
-      pitchVal.textContent = pitch;
-      scheduleSend();
-    });
-
-    // 정지 버튼
-    stopBtn.addEventListener('click', () => {
-      yaw = 0; pitch = 0;
-      yawRange.value = 0; pitchRange.value = 0;
-      yawVal.textContent = '0'; pitchVal.textContent = '0';
-      clearInterval(sendTimer);
-      fetch('/gimbal/stop', {method:'POST'}).catch(console.error);
-    });
-  </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

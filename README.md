@@ -53,19 +53,12 @@ docker run --rm -it \
 
 ## ⚙️ 설정 파일 (`mediamtx.yml`)
 
-```yaml
-paths:
-  gremsy:
-    source: rtsp://192.168.168.240:554/payload #설정해 놓은 gremsy ip
-```
-
-* 위 설정을 적용하면:
+* 위 설정을 적용하면 아래 스트림으로 접근할 수 있습니다.
 
   ```
-  rtsp://<robot-ip>:554/gremsy
+    rtsp   : rtsp://robot-ip:8554/gremsy/
+    webrtc : http://robot-ip:8889/gremsy/
   ```
-
-  로 스트림에 접근할 수 있습니다.
 
 ---
 

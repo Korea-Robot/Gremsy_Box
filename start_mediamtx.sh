@@ -1,41 +1,9 @@
 
-# docker run --rm -it \
-#     --network=host \
-#     -v $(pwd)/mediamtx.yml:/mediamtx.yml \
-#     bluenviron/mediamtx:latest
-
-
-# docker run --rm -it \
-#     -v $(pwd)/mediamtx.yml:/mediamtx.yml \
-#     -e MTX_RTSPTRANSPORTS=tcp \
-#     -e MTX_WEBRTCADDITIONALHOSTS=192.168.168.105 \
-#     -p 554:8554 \
-#     -p 1935:1935 \
-#     -p 8888:8888 \
-#     -p 8889:8889 \
-#     bluenviron/mediamtx
-
-# 루트 프로젝트 폴더에서 실행
-# ROBOT_IP=192.168.168.105 \
-# docker run --rm -it \
-#     --network=host \
-#     -v $(pwd)/mediamtx.yml:/mediamtx.yml:ro \
-#     -e MTX_RTSPTRANSPORTS=tcp \
-#     -e MTX_HLSENABLED=true \
-#     -e MTX_WEBRTCENABLED=true \
-#     -e MTX_WEBRTCADDITIONALHOSTS=$ROBOT_IP \
-#     bluenviron/mediamtx:latest
-
-
-#!/bin/bash
-export ROBOT_IP=192.168.168.105     # 실제 로봇 내부 IP (미리 export)
 docker run --rm -it \
     --network=host \
-    -v $(pwd)/mediamtx.yml:/mediamtx.yml:ro \
-    -e MTX_RTSPTRANSPORTS=tcp \
-    -e MTX_HLSENABLED=true \
-    -e MTX_WEBRTCENABLED=true \
-    -e MTX_SOURCEONDEMAND=false \
-    -e MTX_WEBRTCADDITIONALHOSTS=${ROBOT_IP} \
+    -v "$(pwd)/mediamtx.yml":/mediamtx.yml:ro \
     bluenviron/mediamtx:latest
-# rtsp://robot-159:8554/gremsy
+
+
+# rtsp   : rtsp://robot-ip:8554/gremsy/
+# webrtc : http://robot-ip:8889/gremsy/
