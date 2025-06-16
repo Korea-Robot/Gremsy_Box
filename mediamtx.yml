@@ -142,7 +142,8 @@ authJWTInHTTPQuery: true
 # Global settings -> Control API
 
 # Enable controlling the server through the Control API.
-api: no
+#api: no
+api: yes
 # Address of the Control API listener.
 apiAddress: :9997
 # Enable TLS/HTTPS on the Control API server.
@@ -247,6 +248,8 @@ rtspTransports: [udp, multicast, tcp]
 rtspEncryption: "no"
 # Address of the TCP/RTSP listener. This is needed only when encryption is "no" or "optional".
 rtspAddress: :8554
+protocols: [tcp]
+
 # Address of the TCP/TLS/RTSPS listener. This is needed only when encryption is "strict" or "optional".
 rtspsAddress: :8322
 # Address of the UDP/RTP listener. This is needed only when "udp" is in rtspTransports.
@@ -316,7 +319,7 @@ hlsAllowOrigin: '*'
 hlsTrustedProxies: []
 # By default, HLS is generated only when requested by a user.
 # This option allows to generate it always, avoiding the delay between request and generation.
-hlsAlwaysRemux: no
+hlsAlwaysRemux: yes # no
 # Variant of the HLS protocol to use. Available options are:
 # * mpegts - uses MPEG-TS segments, for maximum compatibility.
 # * fmp4 - uses fragmented MP4 segments, more efficient.
@@ -727,7 +730,8 @@ paths:
   gremsy:
     source: rtsp://192.168.168.240:554/payload
     # on-demand 모드를 끄고, 컨테이너 시작 시 바로 RTSP 연결
-    sourceOnDemand: false
+    sourceOnDemand: false      # ← on-demand 끔
+    runOnStartup: true         # ← 시작 시 바로 실행
   # Settings under path "all_others" are applied to all paths that
   # do not match another entry.
   all_others:

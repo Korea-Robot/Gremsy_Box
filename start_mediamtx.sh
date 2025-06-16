@@ -36,6 +36,9 @@ docker run --rm -it \
     -e MTX_HLSENABLED=true \
     -e MTX_WEBRTCENABLED=true \
     -e MTX_SOURCEONDEMAND=false \
+    -e MTX_RUNONSTARTUP=true        \   # ← 있으면 좋습니다
     -e MTX_WEBRTCADDITIONALHOSTS=${ROBOT_IP} \
     bluenviron/mediamtx:latest
 # rtsp://robot-159:8554/gremsy
+# http://100.87.140.159:8888/hls/gremsy/index.m3u8
+# ws://robot-159:8889/gremsy
