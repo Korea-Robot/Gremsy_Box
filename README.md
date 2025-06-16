@@ -78,8 +78,27 @@ docker run --rm -it \
    curl http://<robot-ip>:8888/api/paths
    ```
 
+### 로봇 남는 포트 확인
 
-이제. 로봇에 연결되어있는 카메라 아이피는 mediamtx를 통해 외부에서 볼수있는상태가 되었고, 이제 curl 명령어를 외부에서 컨트롤할수있게 해야하는데 어떻게 할수있을지 알려줘.
+```bash
+netstat -al | grep 8887
+```
 
-제일 좋은 방법은 로봇에서 서버를 실행시키고 그 로봇아이피에 연결하면 웹페이지가 뜨면서 카메라 스트림도 보이고 
-짐벌제어를 할수있는 페이지도 보이는거야.
+ui폴더에 진입
+도커 설치 
+
+```bash
+docker build -t gremsy-ui:v0.2.0 .
+
+# 실행
+docker run --rm -it --network=host gremsy-ui:v0.2.0
+```
+
+## 클라이언트 실행
+
+웹페이지에 아래 URL로 접속
+
+```url
+<robot-ip>:7777
+```
+
