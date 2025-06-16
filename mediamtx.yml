@@ -11,7 +11,7 @@ rtspTransports: [tcp]
 # HLS 서버 설정 (항상 remux + 고정 길이 세그먼트)
 hlsAddress: :8888
 hlsAlwaysRemux: yes
-hlsEnabled:     true
+# hlsEnabled:     true
 hlsLowLatency:  false     # ← Low-Latency HLS 비활성화
 
 hlsSegmentCount: 7             # 최근 3개 세그먼트 유지
