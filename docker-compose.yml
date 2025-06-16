@@ -1,0 +1,33 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # 1️⃣ MediaMTX 서비스
+  mediamtx:
+    image: bluenviron/mediamtx:latest       # 사용할 이미지 지정
+    network_mode: host                      # 호스트 네트워크 직접 사용
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro     # 설정파일 매핑(읽기 전용)
+    environment:
+      MTX_RTSPTRANSPORTS: tcp               # RTSP over TCP 모드
+      MTX_HLSENABLED: "true"                # HLS 스트리밍 활성화
+      MTX_WEBRTCENABLED: "true"             # WebRTC 스트리밍 활성화
+      MTX_WEBRTCADDITIONALHOSTS: ${192.168.168.105}  # ICE 후보에 추가할 외부 IP/도메인
+    restart: unless-stopped                 # 실패 시 자동 재시작
+
+  # 2️⃣ UI (Flask + Gunicorn)
+  ui:
+    build: ./ui                             # ui/Dockerfile 위치
+    network_mode: host                      # 호스트 네트워크 직접 사용
+    depends_on:
+      - mediamtx                            # mediamtx가 준비된 후 기동
+    environment:
+      GREMSY_API_BASE: http://127.0.0.1:8000 # 로컬 Gremsy API 주소
+      UI_PORT: 7777
+
+    command:                                # Gunicorn 바인딩 포트를 7777로 변경
+      - gunicorn
+      - --bind
+      - "0.0.0.0:7777"
+      - app:app
+    restart: unless-stopped

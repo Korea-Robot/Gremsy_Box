@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Gremsy Box Control</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; }
+    video { width: 80%; max-width: 640px; margin-bottom: 20px; }
+    .slider-container { margin: 10px auto; width: 80%; max-width: 400px; }
+    .slider-container label { display: block; margin-bottom: 5px; }
+    .slider-container input { width: 100%; }
+  </style>
+</head>
+<body>
+  <h1>Gremsy Box Control</h1>
+
+  <!-- 비디오 플레이어 -->
+  <video id="player" controls autoplay muted></video>
+
+  <!-- Yaw/Pitch 슬라이더 -->
+  <div class="slider-container">
+    <label for="yawRange">Yaw 속도: <span id="yawVal">0</span></label>
+    <input type="range" id="yawRange" min="-100" max="100" value="0">
+  </div>
+
+  <div class="slider-container">
+    <label for="pitchRange">Pitch 속도: <span id="pitchVal">0</span></label>
+    <input type="range" id="pitchRange" min="-100" max="100" value="0">
+  </div>
+
+  <button id="stopBtn">정지</button>
+
+  <script>
+    // 1) 스트림 정보 가져와서 HLS 재생
+    fetch('/api/stream')
+      .then(res => res.json())
+      .then(cfg => {
+        const video = document.getElementById('player');
+        if (Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(cfg.hls);
+          hls.attachMedia(video);
+        } else {
+          video.src = cfg.hls;
+        }
+      });
+
+    // 2) 슬라이더 컨트롤
+    let yaw = 0, pitch = 0, sendTimer;
+
+    const yawRange   = document.getElementById('yawRange');
+    const pitchRange = document.getElementById('pitchRange');
+    const yawVal     = document.getElementById('yawVal');
+    const pitchVal   = document.getElementById('pitchVal');
+    const stopBtn    = document.getElementById('stopBtn');
+
+    function sendMove() {
+      fetch('/gimbal/continuousMove', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({yaw, pitch, roll: 0})
+      }).catch(console.error);
+    }
+
+    function scheduleSend() {
+      clearInterval(sendTimer);
+      sendTimer = setInterval(sendMove, 200);  // 200ms마다 전송
+    }
+
+    // yaw 슬라이더 이벤트
+    yawRange.addEventListener('input', () => {
+      yaw = parseInt(yawRange.value);
+      yawVal.textContent = yaw;
+      scheduleSend();
+    });
+
+    // pitch 슬라이더 이벤트
+    pitchRange.addEventListener('input', () => {
+      pitch = parseInt(pitchRange.value);
+      pitchVal.textContent = pitch;
+      scheduleSend();
+    });
+
+    // 정지 버튼
+    stopBtn.addEventListener('click', () => {
+      yaw = 0; pitch = 0;
+      yawRange.value = 0; pitchRange.value = 0;
+      yawVal.textContent = '0'; pitchVal.textContent = '0';
+      clearInterval(sendTimer);
+      fetch('/gimbal/stop', {method:'POST'}).catch(console.error);
+    });
+  </script>
+</body>
+</html>
