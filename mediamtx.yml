@@ -11,7 +11,7 @@ rtspTransports: [tcp]
 # HLS 서버 설정 (항상 remux + 고정 길이 세그먼트)
 hlsAddress: :8888
 hlsAlwaysRemux: yes
-hlsSegmentCount: 3              # 최근 3개 세그먼트 유지
+hlsSegmentCount: 7             # 최근 3개 세그먼트 유지
 hlsSegmentDuration: 1s          # 각 세그먼트 길이 1초
 
 # WebRTC (시그널 HTTP + ICE UDP)
