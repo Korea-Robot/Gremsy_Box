@@ -90,3 +90,44 @@ paths:
 
 제일 좋은 방법은 로봇에서 서버를 실행시키고 그 로봇아이피에 연결하면 웹페이지가 뜨면서 카메라 스트림도 보이고 
 짐벌제어를 할수있는 페이지도 보이는거야.
+
+
+# 실제 사용되는 curl
+
+
+. **Yaw 축만 10도/초로 이동**
+
+```bash
+curl -X POST http://localhost:8000/gimbal/continuousMove \
+  -H "Content-Type: application/json" \
+  -d '{"yaw": 10, "pitch": 0, "roll": 0}'
+```
+
+### 2. **Pitch 축만 이동**
+
+```bash
+curl -X POST http://localhost:8000/gimbal/continuousMove \
+  -H "Content-Type: application/json" \
+  -d '{"yaw": 0, "pitch": 10, "roll": 0}'
+```
+
+### 3. **정지**
+
+```bash
+curl -X POST http://localhost:8000/gimbal/stop
+```
+
+### 4. **카메라 IR 팔레트 변경**
+
+```bash
+curl -X POST http://localhost:8000/camera/set-ir-palette \
+  -H "Content-Type: application/json" \
+  -d '{"irPalette": 2}'
+```
+
+### 5. **뷰소스 변경**
+
+```bash
+curl -X POST http://localhost:8000/camera/change-view-src \
+  -H "Content-Type: application/json" \
+  -d '{"viewSrc": 3}'
