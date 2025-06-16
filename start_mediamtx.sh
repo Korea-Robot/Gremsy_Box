@@ -16,12 +16,26 @@
 #     bluenviron/mediamtx
 
 # 루트 프로젝트 폴더에서 실행
-ROBOT_IP=192.168.168.105 \
+# ROBOT_IP=192.168.168.105 \
+# docker run --rm -it \
+#     --network=host \
+#     -v $(pwd)/mediamtx.yml:/mediamtx.yml:ro \
+#     -e MTX_RTSPTRANSPORTS=tcp \
+#     -e MTX_HLSENABLED=true \
+#     -e MTX_WEBRTCENABLED=true \
+#     -e MTX_WEBRTCADDITIONALHOSTS=$ROBOT_IP \
+#     bluenviron/mediamtx:latest
+
+
+#!/bin/bash
+export ROBOT_IP=192.168.168.105     # 실제 로봇 내부 IP (미리 export)
 docker run --rm -it \
     --network=host \
     -v $(pwd)/mediamtx.yml:/mediamtx.yml:ro \
     -e MTX_RTSPTRANSPORTS=tcp \
     -e MTX_HLSENABLED=true \
     -e MTX_WEBRTCENABLED=true \
-    -e MTX_WEBRTCADDITIONALHOSTS=$ROBOT_IP \
+    -e MTX_SOURCEONDEMAND=false \
+    -e MTX_WEBRTCADDITIONALHOSTS=${ROBOT_IP} \
     bluenviron/mediamtx:latest
+# rtsp://robot-159:8554/gremsy

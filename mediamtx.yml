@@ -726,7 +726,8 @@ pathDefaults:
 paths:
   gremsy:
     source: rtsp://192.168.168.240:554/payload
-
+    # on-demand 모드를 끄고, 컨테이너 시작 시 바로 RTSP 연결
+    sourceOnDemand: false
   # Settings under path "all_others" are applied to all paths that
   # do not match another entry.
   all_others:
