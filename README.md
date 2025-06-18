@@ -1,6 +1,6 @@
 # Gremsy_Box
 
-![](assets/Gremsy_Box.png)
+<!-- ![](assets/Gremsy_Box.png) -->
 
 
 <!-- width만 지정 -->
@@ -10,7 +10,7 @@
 <!-- <img src="assets/Gremsy_Box.png" alt="Gremsy Box" width="400" height="300" /> -->
 
 <!-- CSS 스타일로 더 세밀하게 지정 -->
-<img src="assets/Gremsy_Box.png" alt="Gremsy Box" style="width:50%; max-width:500px;" />
+<img src="assets/Gremsy_Box.png" alt="Gremsy Box" style="width:77%; max-width:500px;" />
 
 
 **Gremsy API + MediaMTX Proxy + Web Stream & Control**
