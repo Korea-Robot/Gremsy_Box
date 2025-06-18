@@ -85,7 +85,12 @@ netstat -al | grep 8887
 ```
 
 ui폴더에 진입
-도커 설치 
+## 도커 설치 (하버 활용)
+
+```bash
+docker pull docker.argusvision.io/gremsy/gremsy_ui@sha256:45f2f2fa922ab22deb8694c948ff3426241199cc7ec89356c9f4525436ffffcc
+```
+
 
 ```bash
 docker build -t gremsy-ui:v0.2.0 .
@@ -102,3 +107,14 @@ docker run --rm -it --network=host gremsy-ui:v0.2.0
 <robot-ip>:7777
 ```
 
+## API 포트 설정 
+
+docker -e option으로 조절
+
+```bash
+docker run -d --restart unless-stopped \
+  --name gremsy_api_autorun\
+  --network host \
+  -e PORT=8003 \
+  gremsy_api:v0.3.0
+```
