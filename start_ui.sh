@@ -1,1 +1,0 @@
-docker run --rm -it --network=host gremsy-ui:v0.2.0
