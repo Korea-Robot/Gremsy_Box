@@ -15,7 +15,7 @@ MEDIAMTX_HTTP_URL = f"http://{ROBOT_IP}:8889/gremsy/"
 @app.route('/')
 def index():
     """메인 페이지"""
-    return render_template('index.html', 
+    return render_template('upgrade_index.html', 
                          rtsp_url=MEDIAMTX_RTSP_URL,
                          robot_ip=ROBOT_IP)
 
