@@ -3,11 +3,46 @@ import requests
 import json
 import logging
 
+
+"""
+주요 기능
+카메라 제어
+
+뷰 소스 변경: EO/IR 통합, EO, IR, 전환, 동기화 모드
+IR 팔레트: 10가지 팔레트 옵션 (화이트핫, 블랙핫, 레인보우 등)
+줌 제어: 연속 줌 (인/아웃), 레인지 줌 슬라이더
+OSD 모드: 끄기, 디버그, 상태정보 표시
+
+짐벌 제어
+
+방향 패드: 직관적인 8방향 제어
+연속 이동: 버튼을 누르고 있는 동안 계속 이동
+정밀 제어: Yaw/Pitch 슬라이더로 정확한 각도 설정
+리셋/정지: 원위치 복귀 및 즉시 정지
+
+🎮 키보드 단축키
+
+WASD / 화살표키: 짐벌 이동
+스페이스바: 짐벌 정지
+R: 짐벌 리셋
++/-: 줌 인/아웃
+
+🔍 개선사항
+
+API 주소 수정: localhost:8000 → 100.88.88.66:8000
+에러 처리 강화: 타임아웃, 예외 처리, 상세 로깅
+연속 제어: 버튼을 누르고 있는 동안 연속 명령 전송
+실시간 피드백: 상태 표시, 로그 시스템
+반응형 디자인: 모바일/태블릿 지원
+터치 지원: 모바일 디바이스 최적화
+
+"""
+
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
 # 설정
-GREMSY_API_BASE = "http://100.88.88.66:8000"
+GREMSY_API_BASE = "http://localhost:8000"
 ROBOT_IP = "192.168.168.105"
 MEDIAMTX_HTTP_URL = f"http://{ROBOT_IP}:8889/gremsy/"
 
@@ -257,4 +292,4 @@ def gimbal_stop():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=7777, debug=True)
