@@ -1,390 +1,382 @@
-class GremsyController {
-    constructor() {
-        this.currentSpeed = 10;
-        this.isMoving = false;
-        this.moveInterval = null;
-        this.currentStreamType = 'hls';
-        this.hls = null;
-        this.webrtcPc = null;
-        this.init();
-    }
+// 전역 변수
+let gimbalMoveInterval = null;
+let zoomInterval = null;
+let currentYaw = 0;
+let currentPitch = 0;
 
-    init() {
-        this.checkConnectionStatus();
-        this.setupEventListeners();
-        this.initializeStream();
-        this.log('시스템 초기화 완료');
-    }
-
-    setupEventListeners() {
-        // 키보드 이벤트
-        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
-        document.addEventListener('keyup', (e) => this.handleKeyUp(e));
-        
-        // 마우스 이벤트 (터치 지원)
-        document.addEventListener('touchstart', (e) => e.preventDefault());
-    }
-
-    async initializeStream() {
-        // HLS 스트림 초기화
-        await this.initHLSStream();
-        
-        // 5초 후 WebRTC 초기화 시도
-        setTimeout(() => {
-            this.initWebRTCStream();
-        }, 5000);
-    }
-
-    async initHLSStream() {
-        const video = document.getElementById('hls-player');
-        const hlsUrl = `http://${window.location.hostname}:8888/gremsy/index.m3u8`;
-        
-        if (Hls.isSupported()) {
-            this.hls = new Hls({
-                enableWorker: false,
-                lowLatencyMode: true,
-                backBufferLength: 90
-            });
-            
-            this.hls.loadSource(hlsUrl);
-            this.hls.attachMedia(video);
-            
-            this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                this.log('HLS 스트림 연결 성공');
-                this.hideStreamPlaceholder();
-            });
-            
-            this.hls.on(Hls.Events.ERROR, (event, data) => {
-                this.log(`HLS 오류: ${data.type} - ${data.details}`, 'error');
-            });
-            
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            // Safari native HLS support
-            video.src = hlsUrl;
-            video.addEventListener('loadedmetadata', () => {
-                this.log('네이티브 HLS 스트림 연결 성공');
-                this.hideStreamPlaceholder();
-            });
-        } else {
-            this.log('HLS를 지원하지 않는 브라우저입니다', 'error');
-        }
-    }
-
-    async initWebRTCStream() {
-        try {
-            // WebRTC 구현은 복잡하므로 우선 iframe으로 대체
-            const webrtcPlayer = document.getElementById('webrtc-player');
-            const webrtcContainer = webrtcPlayer.parentElement;
-            
-            // iframe 생성 (MediaMTX WebRTC 페이지)
-            const iframe = document.createElement('iframe');
-            iframe.id = 'webrtc-iframe';
-            iframe.className = 'video-player';
-            iframe.src = `http://${window.location.hostname}:8889/gremsy`;
-            iframe.style.width = '100%';
-            iframe.style.height = '450px';
-            iframe.style.border = 'none';
-            iframe.style.borderRadius = '10px';
-            
-            webrtcContainer.insertBefore(iframe, webrtcPlayer);
-            webrtcPlayer.remove();
-            
-            this.log('WebRTC iframe 초기화 완료');
-        } catch (error) {
-            this.log(`WebRTC 초기화 오류: ${error.message}`, 'error');
-        }
-    }
-
-    switchStream(type) {
-        const hlsPlayer = document.getElementById('hls-player');
-        const webrtcPlayer = document.getElementById('webrtc-iframe') || document.getElementById('webrtc-player');
-        const tabs = document.querySelectorAll('.tab-btn');
-        
-        // 탭 스타일 업데이트
-        tabs.forEach(tab => tab.classList.remove('active'));
-        event.target.classList.add('active');
-        
-        // 플레이어 전환
-        if (type === 'hls') {
-            hlsPlayer.classList.add('active');
-            webrtcPlayer.classList.remove('active');
-            this.currentStreamType = 'hls';
-            this.log('HLS 스트림으로 전환');
-        } else {
-            hlsPlayer.classList.remove('active');
-            webrtcPlayer.classList.add('active');
-            this.currentStreamType = 'webrtc';
-            this.log('WebRTC 스트림으로 전환');
-        }
-    }
-
-    hideStreamPlaceholder() {
-        const placeholder = document.getElementById('stream-placeholder');
-        if (placeholder) {
-            placeholder.style.display = 'none';
-        }
-    }
-
-    refreshStream() {
-        if (this.currentStreamType === 'hls') {
-            this.refreshHLSStream();
-        } else {
-            this.refreshWebRTCStream();
-        }
-    }
-
-    refreshHLSStream() {
-        if (this.hls) {
-            this.hls.destroy();
-        }
-        this.initHLSStream();
-        this.log('HLS 스트림 새로고침');
-    }
-
-    refreshWebRTCStream() {
-        const iframe = document.getElementById('webrtc-iframe');
-        if (iframe) {
-            iframe.src = iframe.src;
-        }
-        this.log('WebRTC 스트림 새로고침');
-    }
-
-    openExternalPlayer() {
-        const urls = {
-            hls: `http://${window.location.hostname}:8888/gremsy/index.m3u8`,
-            rtsp: `rtsp://${window.location.hostname}:8554/gremsy`,
-            webrtc: `http://${window.location.hostname}:8889/gremsy`
-        };
-        
-        const message = `외부 플레이어 URL:\n\n` +
-                       `HLS: ${urls.hls}\n` +
-                       `RTSP: ${urls.rtsp}\n` +
-                       `WebRTC: ${urls.webrtc}\n\n` +
-                       `VLC, MPV, OBS 등에서 사용 가능합니다.`;
-        
-        alert(message);
-        this.log('외부 플레이어 URL 표시');
-    }
-
-    async checkConnectionStatus() {
-        try {
-            const response = await fetch('/api/stream/status');
-            const data = await response.json();
-            
-            const statusElement = document.getElementById('connection-status');
-            if (data.success) {
-                statusElement.textContent = '🟢 온라인';
-                statusElement.className = 'status-indicator online';
-                this.log('MediaMTX 연결 확인됨');
-            } else {
-                throw new Error('MediaMTX 응답 없음');
-            }
-        } catch (error) {
-            const statusElement = document.getElementById('connection-status');
-            statusElement.textContent = '🔴 오프라인';
-            statusElement.className = 'status-indicator offline';
-            this.log(`연결 오류: ${error.message}`, 'error');
-        }
-    }
-
-    handleKeyDown(event) {
-        if (this.isMoving) return;
-
-        switch(event.key) {
-            case 'ArrowUp':
-            case 'w':
-            case 'W':
-                this.startMove('pitch', this.currentSpeed);
-                break;
-            case 'ArrowDown':
-            case 's':
-            case 'S':
-                this.startMove('pitch', -this.currentSpeed);
-                break;
-            case 'ArrowLeft':
-            case 'a':
-            case 'A':
-                this.startMove('yaw', -this.currentSpeed);
-                break;
-            case 'ArrowRight':
-            case 'd':
-            case 'D':
-                this.startMove('yaw', this.currentSpeed);
-                break;
-            case ' ':
-                event.preventDefault();
-                this.stopMove();
-                break;
-        }
-    }
-
-    handleKeyUp(event) {
-        switch(event.key) {
-            case 'ArrowUp':
-            case 'ArrowDown':
-            case 'ArrowLeft':
-            case 'ArrowRight':
-            case 'w':
-            case 'W':
-            case 's':
-            case 'S':
-            case 'a':
-            case 'A':
-            case 'd':
-            case 'D':
-                this.stopMove();
-                break;
-        }
-    }
-
-    async startMove(axis, speed) {
-        if (this.isMoving) return;
-        
-        this.isMoving = true;
-        const moveData = { yaw: 0, pitch: 0, roll: 0 };
-        moveData[axis] = speed;
-
-        try {
-            const response = await fetch('/api/gimbal/move', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(moveData)
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                this.log(`짐벌 이동 시작: ${axis} ${speed}°/s`);
-            } else {
-                throw new Error(result.error);
-            }
-        } catch (error) {
-            this.log(`이동 오류: ${error.message}`, 'error');
-            this.isMoving = false;
-        }
-    }
-
-    async stopMove() {
-        if (!this.isMoving) return;
-        
-        try {
-            const response = await fetch('/api/gimbal/stop', {
-                method: 'POST'
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                this.log('짐벌 정지');
-            } else {
-                throw new Error(result.error);
-            }
-        } catch (error) {
-            this.log(`정지 오류: ${error.message}`, 'error');
-        } finally {
-            this.isMoving = false;
-        }
-    }
-
-    async changeIRPalette(palette) {
-        try {
-            const response = await fetch('/api/camera/ir-palette', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ irPalette: parseInt(palette) })
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                this.log(`IR 팔레트 변경: ${palette}`);
-            } else {
-                throw new Error(result.error);
-            }
-        } catch (error) {
-            this.log(`IR 팔레트 변경 오류: ${error.message}`, 'error');
-        }
-    }
-
-    async changeViewSrc(viewSrc) {
-        try {
-            const response = await fetch('/api/camera/view-src', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ viewSrc: parseInt(viewSrc) })
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                this.log(`뷰소스 변경: ${viewSrc}`);
-            } else {
-                throw new Error(result.error);
-            }
-        } catch (error) {
-            this.log(`뷰소스 변경 오류: ${error.message}`, 'error');
-        }
-    }
-
-    updateSpeed(speed) {
-        this.currentSpeed = parseInt(speed);
-        document.getElementById('speed-value').textContent = speed;
-        this.log(`이동 속도 변경: ${speed}°/s`);
-    }
-
-    refreshStream() {
-        const video = document.getElementById('video-player');
-        const currentSrc = video.src;
-        video.src = '';
-        setTimeout(() => {
-            video.src = currentSrc;
-            video.load();
-        }, 100);
-        this.log('스트림 새로고침');
-    }
-
-    log(message, type = 'info') {
-        const logElement = document.getElementById('activity-log');
-        const timestamp = new Date().toLocaleTimeString();
-        const logType = type === 'error' ? '❌' : '✅';
-        
-        const logEntry = `[${timestamp}] ${logType} ${message}\n`;
-        logElement.textContent += logEntry;
-        logElement.scrollTop = logElement.scrollHeight;
-    }
-}
-
-// 전역 함수들
-let controller;
-
-window.addEventListener('DOMContentLoaded', () => {
-    controller = new GremsyController();
+// DOM 로드 완료 시 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSystem();
+    setupEventListeners();
 });
 
-function startMove(axis, speed) {
-    controller.startMove(axis, speed);
+// 시스템 초기화
+function initializeSystem() {
+    addLog('시스템이 초기화되었습니다.', 'success');
+    updateStatus('시스템 준비됨');
+    
+    // 슬라이더 초기값 설정
+    updateSliderValues();
 }
 
-function stopMove() {
-    controller.stopMove();
+// 이벤트 리스너 설정
+function setupEventListeners() {
+    // 줌 슬라이더 이벤트
+    const zoomRange = document.getElementById('zoomRange');
+    zoomRange.addEventListener('input', function() {
+        document.getElementById('zoomValue').textContent = this.value + '%';
+    });
+    
+    // 짐벌 슬라이더 이벤트
+    const yawSlider = document.getElementById('yawSlider');
+    const pitchSlider = document.getElementById('pitchSlider');
+    
+    yawSlider.addEventListener('input', function() {
+        currentYaw = parseFloat(this.value);
+        document.getElementById('yawValue').textContent = currentYaw + '°';
+    });
+    
+    pitchSlider.addEventListener('input', function() {
+        currentPitch = parseFloat(this.value);
+        document.getElementById('pitchValue').textContent = currentPitch + '°';
+    });
 }
 
-function changeIRPalette(palette) {
-    controller.changeIRPalette(palette);
+// 상태 업데이트
+function updateStatus(message) {
+    const statusElement = document.getElementById('status');
+    statusElement.textContent = message;
 }
 
-function changeViewSrc(viewSrc) {
-    controller.changeViewSrc(viewSrc);
+// 로그 추가
+function addLog(message, type = 'info') {
+    const logContainer = document.getElementById('logContainer');
+    const logEntry = document.createElement('div');
+    logEntry.className = `log-entry ${type}`;
+    
+    const timestamp = new Date().toLocaleTimeString();
+    logEntry.textContent = `[${timestamp}] ${message}`;
+    
+    logContainer.appendChild(logEntry);
+    logContainer.scrollTop = logContainer.scrollHeight;
+    
+    // 로그가 너무 많으면 오래된 것 제거
+    const logEntries = logContainer.querySelectorAll('.log-entry');
+    if (logEntries.length > 100) {
+        logEntries[0].remove();
+    }
 }
 
-function updateSpeed(speed) {
-    controller.updateSpeed(speed);
+// 로그 지우기
+function clearLog() {
+    const logContainer = document.getElementById('logContainer');
+    logContainer.innerHTML = '';
+    addLog('로그가 지워졌습니다.', 'info');
 }
 
-function refreshStream() {
-    controller.refreshStream();
+// 슬라이더 값 업데이트
+function updateSliderValues() {
+    document.getElementById('yawValue').textContent = currentYaw + '°';
+    document.getElementById('pitchValue').textContent = currentPitch + '°';
+    document.getElementById('zoomValue').textContent = document.getElementById('zoomRange').value + '%';
 }
 
-function switchStream(type) {
-    controller.switchStream(type);
+// API 요청 함수
+async function makeAPIRequest(url, data = {}) {
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            addLog(result.message, 'success');
+            return result;
+        } else {
+            addLog(`오류: ${result.message}`, 'error');
+            return null;
+        }
+    } catch (error) {
+        addLog(`네트워크 오류: ${error.message}`, 'error');
+        return null;
+    }
 }
 
-function openExternalPlayer() {
-    controller.openExternalPlayer();
+// 카메라 제어 함수들
+async function changeViewSource(viewSrc) {
+    const viewSources = {
+        0: 'EO/IR 통합',
+        1: 'EO',
+        2: 'IR',
+        3: 'IR/EO 전환',
+        4: '동기화 뷰'
+    };
+    
+    addLog(`뷰 소스를 ${viewSources[viewSrc]}로 변경 중...`, 'info');
+    await makeAPIRequest('/api/camera/view-source', { viewSrc: viewSrc });
 }
+
+async function changeIRPalette() {
+    const select = document.getElementById('irPalette');
+    const irPalette = parseInt(select.value);
+    const paletteName = select.options[select.selectedIndex].text;
+    
+    addLog(`IR 팔레트를 ${paletteName}로 변경 중...`, 'info');
+    await makeAPIRequest('/api/camera/ir-palette', { irPalette: irPalette });
+}
+
+async function setOSDMode(osdMode) {
+    const osdModes = {
+        0: '비활성화',
+        1: '디버그 모드',
+        2: '상태 정보 표시'
+    };
+    
+    addLog(`OSD 모드를 ${osdModes[osdMode]}로 설정 중...`, 'info');
+    await makeAPIRequest('/api/camera/osd-mode', { osdMode: osdMode });
+}
+
+// 줌 제어 함수들
+function startZoom(direction) {
+    if (zoomInterval) {
+        clearInterval(zoomInterval);
+    }
+    
+    const directionText = direction === 1 ? '인' : '아웃';
+    addLog(`줌 ${directionText} 시작`, 'info');
+    
+    // 즉시 한 번 실행
+    makeAPIRequest('/api/camera/zoom/continuous', { zoomDirection: direction });
+    
+    // 연속 줌을 위한 인터벌 설정
+    zoomInterval = setInterval(() => {
+        makeAPIRequest('/api/camera/zoom/continuous', { zoomDirection: direction });
+    }, 100);
+}
+
+function stopZoom() {
+    if (zoomInterval) {
+        clearInterval(zoomInterval);
+        zoomInterval = null;
+        addLog('줌 정지', 'info');
+        makeAPIRequest('/api/camera/zoom/continuous', { zoomDirection: 0 });
+    }
+}
+
+async function setZoomRange(percentage) {
+    addLog(`줌 레인지를 ${percentage}%로 설정 중...`, 'info');
+    await makeAPIRequest('/api/camera/zoom/range', { zoomPercentage: parseInt(percentage) });
+}
+
+// 짐벌 제어 함수들
+function startGimbalMove(yaw, pitch) {
+    if (gimbalMoveInterval) {
+        clearInterval(gimbalMoveInterval);
+    }
+    
+    addLog(`짐벌 이동 시작 (Yaw: ${yaw}, Pitch: ${pitch})`, 'info');
+    
+    // 즉시 한 번 실행
+    makeAPIRequest('/api/gimbal/continuous-move', {
+        yaw: yaw,
+        pitch: pitch,
+        roll: 0
+    });
+    
+    // 연속 이동을 위한 인터벌 설정
+    gimbalMoveInterval = setInterval(() => {
+        makeAPIRequest('/api/gimbal/continuous-move', {
+            yaw: yaw,
+            pitch: pitch,
+            roll: 0
+        });
+    }, 100);
+}
+
+function stopGimbal() {
+    if (gimbalMoveInterval) {
+        clearInterval(gimbalMoveInterval);
+        gimbalMoveInterval = null;
+        addLog('짐벌 이동 정지', 'info');
+        makeAPIRequest('/api/gimbal/stop');
+    }
+}
+
+async function resetGimbal() {
+    addLog('짐벌 리셋 중...', 'info');
+    
+    // 슬라이더 값도 초기화
+    document.getElementById('yawSlider').value = 0;
+    document.getElementById('pitchSlider').value = 0;
+    currentYaw = 0;
+    currentPitch = 0;
+    updateSliderValues();
+    
+    await makeAPIRequest('/api/gimbal/reset');
+}
+
+function updateGimbalValue(axis, value) {
+    if (axis === 'yaw') {
+        currentYaw = parseFloat(value);
+        document.getElementById('yawValue').textContent = currentYaw + '°';
+    } else if (axis === 'pitch') {
+        currentPitch = parseFloat(value);
+        document.getElementById('pitchValue').textContent = currentPitch + '°';
+    }
+}
+
+async function applyGimbalPosition() {
+    addLog(`짐벌 위치 적용 중 (Yaw: ${currentYaw}°, Pitch: ${currentPitch}°)`, 'info');
+    await makeAPIRequest('/api/gimbal/position-move', {
+        yaw: currentYaw,
+        pitch: currentPitch,
+        roll: 0
+    });
+}
+
+// 키보드 단축키 지원
+document.addEventListener('keydown', function(event) {
+    // 입력 필드에 포커스가 있을 때는 단축키 비활성화
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') {
+        return;
+    }
+    
+    switch(event.key.toLowerCase()) {
+        case 'w':
+        case 'arrowup':
+            event.preventDefault();
+            startGimbalMove(0, -5);
+            break;
+        case 's':
+        case 'arrowdown':
+            event.preventDefault();
+            startGimbalMove(0, 5);
+            break;
+        case 'a':
+        case 'arrowleft':
+            event.preventDefault();
+            startGimbalMove(-5, 0);
+            break;
+        case 'd':
+        case 'arrowright':
+            event.preventDefault();
+            startGimbalMove(5, 0);
+            break;
+        case ' ':
+            event.preventDefault();
+            stopGimbal();
+            break;
+        case 'r':
+            event.preventDefault();
+            resetGimbal();
+            break;
+        case '=':
+        case '+':
+            event.preventDefault();
+            startZoom(1);
+            break;
+        case '-':
+            event.preventDefault();
+            startZoom(-1);
+            break;
+    }
+});
+
+document.addEventListener('keyup', function(event) {
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') {
+        return;
+    }
+    
+    switch(event.key.toLowerCase()) {
+        case 'w':
+        case 's':
+        case 'a':
+        case 'd':
+        case 'arrowup':
+        case 'arrowdown':
+        case 'arrowleft':
+        case 'arrowright':
+            stopGimbal();
+            break;
+        case '=':
+        case '+':
+        case '-':
+            stopZoom();
+            break;
+    }
+});
+
+// 페이지 언로드 시 정리
+window.addEventListener('beforeunload', function() {
+    if (gimbalMoveInterval) {
+        clearInterval(gimbalMoveInterval);
+        makeAPIRequest('/api/gimbal/stop');
+    }
+    if (zoomInterval) {
+        clearInterval(zoomInterval);
+        makeAPIRequest('/api/camera/zoom/continuous', { zoomDirection: 0 });
+    }
+});
+
+// 비디오 스트림 오류 처리
+document.getElementById('videoStream').addEventListener('error', function() {
+    addLog('비디오 스트림 연결 오류', 'error');
+    updateStatus('스트림 연결 실패');
+});
+
+document.getElementById('videoStream').addEventListener('load', function() {
+    addLog('비디오 스트림 연결됨', 'success');
+    updateStatus('스트림 연결됨');
+});
+
+// 터치 이벤트 지원 (모바일)
+function addTouchSupport() {
+    const directionButtons = document.querySelectorAll('.dir-btn');
+    
+    directionButtons.forEach(button => {
+        button.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            const mouseEvent = new MouseEvent('mousedown', {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            button.dispatchEvent(mouseEvent);
+        });
+        
+        button.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            const mouseEvent = new MouseEvent('mouseup', {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            button.dispatchEvent(mouseEvent);
+        });
+    });
+}
+
+// 터치 지원 초기화
+addTouchSupport();
+
+// 개발자 도구용 헬퍼 함수들
+window.debugAPI = {
+    testGimbalMove: (yaw, pitch) => makeAPIRequest('/api/gimbal/continuous-move', { yaw, pitch, roll: 0 }),
+    testZoom: (direction) => makeAPIRequest('/api/camera/zoom/continuous', { zoomDirection: direction }),
+    testViewSource: (src) => makeAPIRequest('/api/camera/view-source', { viewSrc: src }),
+    getLogs: () => document.getElementById('logContainer').innerHTML,
+    clearLogs: () => clearLog()
+};
+
+console.log('카메라 & 짐벌 제어 시스템이 로드되었습니다.');
+console.log('키보드 단축키:');
+console.log('  WASD / 화살표 키: 짐벌 이동');
+console.log('  스페이스바: 짐벌 정지');
+console.log('  R: 짐벌 리셋');
+console.log('  +/-: 줌 인/아웃');
+console.log('개발자 도구에서 window.debugAPI 객체를 사용하여 API를 테스트할 수 있습니다.');
