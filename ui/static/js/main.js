@@ -183,17 +183,25 @@ function startGimbalMove(yaw, pitch) {
     
     // 즉시 한 번 실행
     makeAPIRequest('/api/gimbal/continuous-move', {
-        yaw: yaw,
-        pitch: pitch,
-        roll: 0
+        // yaw: yaw,
+        // pitch: pitch,
+        // roll: 0
+
+        pitch: yaw,
+        roll: pitch,
+        yaw: roll
     });
     
     // 연속 이동을 위한 인터벌 설정
     gimbalMoveInterval = setInterval(() => {
         makeAPIRequest('/api/gimbal/continuous-move', {
-            yaw: yaw,
-            pitch: pitch,
-            roll: 0
+            // yaw: yaw,
+            // pitch: pitch,
+            // roll: 0
+
+            pitch: yaw,
+            roll: 0,
+            yaw: roll
         });
     }, 100);
 }
@@ -233,9 +241,12 @@ function updateGimbalValue(axis, value) {
 async function applyGimbalPosition() {
     addLog(`짐벌 위치 적용 중 (Yaw: ${currentYaw}°, Pitch: ${currentPitch}°)`, 'info');
     await makeAPIRequest('/api/gimbal/position-move', {
-        yaw: currentYaw,
-        pitch: currentPitch,
-        roll: 0
+        // yaw: currentYaw,
+        // pitch: currentPitch,
+        // roll: 0
+        yaw: currentPitch,
+        pitch: 0,
+        roll: currentYaw
     });
 }
 

@@ -17,7 +17,8 @@
             <!-- 비디오 스트림 섹션 -->
             <section class="video-section">
                 <div class="video-container">
-                    <img id="videoStream" src="{{ rtsp_url }}" alt="Live Stream" />
+                    {% comment %} <img id="videoStream" src="{{ rtsp_url }}" alt="Live Stream" /> {% endcomment %}
+                    <iframe src="{{ webrtc_url }}" width="640" height="480" allow="autoplay; fullscreen"></iframe>
                     <div class="stream-overlay">
                         <div class="stream-info">Live Stream</div>
                     </div>
@@ -26,6 +27,48 @@
 
             <!-- 제어 패널 -->
             <section class="controls-section">
+
+                <!-- 짐벌 제어 -->
+                <div class="control-group">
+                    <h3>짐벌 제어</h3>
+                    
+                    <!-- 방향 제어 패드 -->
+                    <div class="control-item">
+                        <label>방향 제어:</label>
+                        <div class="gimbal-pad">
+                            <div class="direction-pad">
+                                <button class="dir-btn up" onmousedown="startGimbalMove(0, -5)" onmouseup="stopGimbal()" onmouseleave="stopGimbal()">↑</button>
+                                <div class="middle-row">
+                                    <button class="dir-btn left" onmousedown="startGimbalMove(-5, 0)" onmouseup="stopGimbal()" onmouseleave="stopGimbal()">←</button>
+                                    <button class="dir-btn center" onclick="resetGimbal()">⌂</button>
+                                    <button class="dir-btn right" onmousedown="startGimbalMove(5, 0)" onmouseup="stopGimbal()" onmouseleave="stopGimbal()">→</button>
+                                </div>
+                                <button class="dir-btn down" onmousedown="startGimbalMove(0, 5)" onmouseup="stopGimbal()" onmouseleave="stopGimbal()">↓</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 정밀 제어 -->
+                    <div class="control-item">
+                        <label>정밀 제어:</label>
+                        <div class="precision-controls">
+                            <div class="slider-group">
+                                <label>Yaw: <span id="yawValue">0°</span></label>
+                                <input type="range" id="yawSlider" min="-180" max="180" value="0" onchange="updateGimbalValue('yaw', this.value)">
+                            </div>
+                            <div class="slider-group">
+                                <label>Pitch: <span id="pitchValue">0°</span></label>
+                                <input type="range" id="pitchSlider" min="-90" max="90" value="0" onchange="updateGimbalValue('pitch', this.value)">
+                            </div>
+                            <div class="gimbal-actions">
+                                <button class="btn-primary" onclick="applyGimbalPosition()">위치 적용</button>
+                                <button class="btn-danger" onclick="resetGimbal()">리셋</button>
+                                <button class="btn-warning" onclick="stopGimbal()">정지</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 카메라 제어 -->
                 <div class="control-group">
                     <h3>카메라 제어</h3>
@@ -83,46 +126,6 @@
                     </div>
                 </div>
 
-                <!-- 짐벌 제어 -->
-                <div class="control-group">
-                    <h3>짐벌 제어</h3>
-                    
-                    <!-- 방향 제어 패드 -->
-                    <div class="control-item">
-                        <label>방향 제어:</label>
-                        <div class="gimbal-pad">
-                            <div class="direction-pad">
-                                <button class="dir-btn up" onmousedown="startGimbalMove(0, -5)" onmouseup="stopGimbal()" onmouseleave="stopGimbal()">↑</button>
-                                <div class="middle-row">
-                                    <button class="dir-btn left" onmousedown="startGimbalMove(-5, 0)" onmouseup="stopGimbal()" onmouseleave="stopGimbal()">←</button>
-                                    <button class="dir-btn center" onclick="resetGimbal()">⌂</button>
-                                    <button class="dir-btn right" onmousedown="startGimbalMove(5, 0)" onmouseup="stopGimbal()" onmouseleave="stopGimbal()">→</button>
-                                </div>
-                                <button class="dir-btn down" onmousedown="startGimbalMove(0, 5)" onmouseup="stopGimbal()" onmouseleave="stopGimbal()">↓</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 정밀 제어 -->
-                    <div class="control-item">
-                        <label>정밀 제어:</label>
-                        <div class="precision-controls">
-                            <div class="slider-group">
-                                <label>Yaw: <span id="yawValue">0°</span></label>
-                                <input type="range" id="yawSlider" min="-180" max="180" value="0" onchange="updateGimbalValue('yaw', this.value)">
-                            </div>
-                            <div class="slider-group">
-                                <label>Pitch: <span id="pitchValue">0°</span></label>
-                                <input type="range" id="pitchSlider" min="-90" max="90" value="0" onchange="updateGimbalValue('pitch', this.value)">
-                            </div>
-                            <div class="gimbal-actions">
-                                <button class="btn-primary" onclick="applyGimbalPosition()">위치 적용</button>
-                                <button class="btn-danger" onclick="resetGimbal()">리셋</button>
-                                <button class="btn-warning" onclick="stopGimbal()">정지</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </section>
         </main>
 

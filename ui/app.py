@@ -50,8 +50,8 @@ MEDIAMTX_HTTP_URL = f"http://{ROBOT_IP}:8889/gremsy/"
 def index():
     """메인 페이지"""
     return render_template('index.html', 
-                         rtsp_url=MEDIAMTX_HTTP_URL,
-                         robot_ip=ROBOT_IP)
+                        webrtc_url=MEDIAMTX_HTTP_URL,
+                        robot_ip=ROBOT_IP)
 
 # 카메라 제어 API
 @app.route('/api/camera/zoom/step', methods=['POST'])
