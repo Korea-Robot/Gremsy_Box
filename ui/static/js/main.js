@@ -4,8 +4,58 @@ let zoomInterval = null;
 let currentYaw = 0;
 let currentPitch = 0;
 
+
+// WebRTC 연결함수
+
+async function startWebRTC() {
+    const pc = new RTCPeerConnection();
+
+    // 스트림 수신 시 video 태그에 바인딩
+    pc.ontrack = e => {
+        const video = document.getElementById('videoStream');
+        if (!video.srcObject) {
+            video.srcObject = e.streams[0];
+        }
+    };
+
+    // 1) Offer 요청
+    const offerRes = await fetch(WEBRTC_URL + 'offer', { method: 'POST' });
+    const { sdp: offerSDP } = await offerRes.json();
+    await pc.setRemoteDescription({ type: 'offer', sdp: offerSDP });
+
+    // 2) Answer 생성 및 전송
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    await fetch(WEBRTC_URL + 'answer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sdp: answer.sdp })
+    });
+
+    // 3) ICE 후보 교환
+    pc.onicecandidate = ({ candidate }) => {
+        if (candidate) {
+            fetch(WEBRTC_URL + 'ice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(candidate)
+            });
+        }
+    };
+}
+
+
+
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
+
+    // ── 여기에 추가 ──
+    startWebRTC().catch(err => {
+        console.error('WebRTC 오류:', err);
+        addLog('스트림 연결 실패', 'error');
+        updateStatus('스트림 연결 실패');
+    });
+    
     initializeSystem();
     setupEventListeners();
 });

@@ -129,3 +129,14 @@ docker run -d --restart unless-stopped \
   -e PORT=8003 \
   gremsy_api:v0.3.0
 ```
+
+
+## Gremsy UI 설명
+
+- app.py (Flask Backend) : 웹서버 & 라우팅, API 프록시 역할, 로깅에러 처리
+
+- templates/index.html (클라이언트 뷰) : <video> 태그 = 스트림 재생용, 템플릿 변수 설정, 스크립트 로딩
+
+- static/style.css (스타일링) : 레이아웃 & 배치 , 디자인, UI 
+
+- static/main.js (클라이언트 로직) : Webrtc 연결관리, api 호출 & 상태 피드백, curl 변환기능

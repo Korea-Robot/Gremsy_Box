@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>카메라 & 짐벌 제어 시스템</title>
+    <title>Gremsy Box</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>카메라 & 짐벌 제어 시스템</h1>
+            <h1>Gremsy Box : 카메라 & 짐벌 제어 시스템</h1>
             <div class="status" id="status">연결 대기 중...</div>
         </header>
 
@@ -17,8 +17,10 @@
             <!-- 비디오 스트림 섹션 -->
             <section class="video-section">
                 <div class="video-container">
-                    {% comment %} <img id="videoStream" src="{{ rtsp_url }}" alt="Live Stream" /> {% endcomment %}
-                    <iframe src="{{ webrtc_url }}" width="640" height="480" allow="autoplay; fullscreen"></iframe>
+                    {% comment %} <iframe src="{{ webrtc_url }}" width="640" height="480" allow="autoplay; fullscreen"></iframe> {% endcomment %}
+                    <video id="videoStream"
+                        width="640" height="480"
+                        autoplay playsinline></video>
                     <div class="stream-overlay">
                         <div class="stream-info">Live Stream</div>
                     </div>
@@ -139,6 +141,7 @@
         </section>
     </div>
 
+    <!-- WebRTC + UI 제어 로직 -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
