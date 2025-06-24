@@ -1,7 +1,7 @@
 # #!/bin/bash
 
-docker build -t gremsy-ui:v0.2.0 .
-docker run --rm -it --network=host gremsy-ui:v0.2.0
+docker build -t gremsy-ui:v0.2.1 .
+# docker run --rm -it --network=host gremsy-ui:v0.2.0
 
 # echo "🐳 Docker로 Gremsy Web Controller 시작 중..."
 

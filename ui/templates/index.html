@@ -17,12 +17,27 @@
             <!-- 비디오 스트림 섹션 -->
             <section class="video-section">
                 <div class="video-container">
-                    {% comment %} <iframe src="{{ webrtc_url }}" width="640" height="480" allow="autoplay; fullscreen"></iframe> {% endcomment %}
+                    <!-- WebRTC 스트림을 위한 iframe -->
+                    <iframe id="webrtcStream" 
+                            src="{{ webrtc_url }}" 
+                            width="640" 
+                            height="480" 
+                            allow="autoplay; fullscreen; camera; microphone"
+                            style="border: none;">
+                    </iframe>
+                    
+                    <!-- 대체 비디오 태그 (iframe 실패시) -->
                     <video id="videoStream"
-                        width="640" height="480"
-                        autoplay playsinline></video>
+                           width="640" 
+                           height="480"
+                           autoplay 
+                           playsinline
+                           style="display: none;">
+                    </video>
+                    
                     <div class="stream-overlay">
-                        <div class="stream-info">Live Stream</div>
+                        <div class="stream-info">Live Stream - {{ robot_ip }}</div>
+                        <div class="stream-url">{{ webrtc_url }}</div>
                     </div>
                 </div>
             </section>
@@ -39,13 +54,41 @@
                         <label>방향 제어:</label>
                         <div class="gimbal-pad">
                             <div class="direction-pad">
-                                <button class="dir-btn up" onmousedown="startGimbalMove(0, -5)" onmouseup="stopGimbal()" onmouseleave="stopGimbal()">↑</button>
+                                <!-- Pitch Up (위) - Pitch 음수값 -->
+                                <button class="dir-btn up" 
+                                        onmousedown="startGimbalMove(0, -10)" 
+                                        onmouseup="stopGimbal()" 
+                                        onmouseleave="stopGimbal()"
+                                        ontouchstart="startGimbalMove(0, -10)" 
+                                        ontouchend="stopGimbal()">↑</button>
+                                
                                 <div class="middle-row">
-                                    <button class="dir-btn left" onmousedown="startGimbalMove(-5, 0)" onmouseup="stopGimbal()" onmouseleave="stopGimbal()">←</button>
+                                    <!-- Yaw Left (좌) - Yaw 음수값 -->
+                                    <button class="dir-btn left" 
+                                            onmousedown="startGimbalMove(-10, 0)" 
+                                            onmouseup="stopGimbal()" 
+                                            onmouseleave="stopGimbal()"
+                                            ontouchstart="startGimbalMove(-10, 0)" 
+                                            ontouchend="stopGimbal()">←</button>
+                                    
                                     <button class="dir-btn center" onclick="resetGimbal()">⌂</button>
-                                    <button class="dir-btn right" onmousedown="startGimbalMove(5, 0)" onmouseup="stopGimbal()" onmouseleave="stopGimbal()">→</button>
+                                    
+                                    <!-- Yaw Right (우) - Yaw 양수값 -->
+                                    <button class="dir-btn right" 
+                                            onmousedown="startGimbalMove(10, 0)" 
+                                            onmouseup="stopGimbal()" 
+                                            onmouseleave="stopGimbal()"
+                                            ontouchstart="startGimbalMove(10, 0)" 
+                                            ontouchend="stopGimbal()">→</button>
                                 </div>
-                                <button class="dir-btn down" onmousedown="startGimbalMove(0, 5)" onmouseup="stopGimbal()" onmouseleave="stopGimbal()">↓</button>
+                                
+                                <!-- Pitch Down (아래) - Pitch 양수값 -->
+                                <button class="dir-btn down" 
+                                        onmousedown="startGimbalMove(0, 10)" 
+                                        onmouseup="stopGimbal()" 
+                                        onmouseleave="stopGimbal()"
+                                        ontouchstart="startGimbalMove(0, 10)" 
+                                        ontouchend="stopGimbal()">↓</button>
                             </div>
                         </div>
                     </div>
@@ -55,12 +98,14 @@
                         <label>정밀 제어:</label>
                         <div class="precision-controls">
                             <div class="slider-group">
-                                <label>Yaw: <span id="yawValue">0°</span></label>
-                                <input type="range" id="yawSlider" min="-180" max="180" value="0" onchange="updateGimbalValue('yaw', this.value)">
+                                <label>Yaw (좌우): <span id="yawValue">0°</span></label>
+                                <input type="range" id="yawSlider" min="-180" max="180" value="0" 
+                                       oninput="updateGimbalValue('yaw', this.value)">
                             </div>
                             <div class="slider-group">
-                                <label>Pitch: <span id="pitchValue">0°</span></label>
-                                <input type="range" id="pitchSlider" min="-90" max="90" value="0" onchange="updateGimbalValue('pitch', this.value)">
+                                <label>Pitch (상하): <span id="pitchValue">0°</span></label>
+                                <input type="range" id="pitchSlider" min="-90" max="90" value="0" 
+                                       oninput="updateGimbalValue('pitch', this.value)">
                             </div>
                             <div class="gimbal-actions">
                                 <button class="btn-primary" onclick="applyGimbalPosition()">위치 적용</button>
@@ -108,10 +153,22 @@
                     <div class="control-item">
                         <label>줌 제어:</label>
                         <div class="zoom-controls">
-                            <button class="btn-action" onmousedown="startZoom(-1)" onmouseup="stopZoom()" onmouseleave="stopZoom()">줌 아웃</button>
-                            <button class="btn-action" onmousedown="startZoom(1)" onmouseup="stopZoom()" onmouseleave="stopZoom()">줌 인</button>
+                            <button class="btn-action" 
+                                    onmousedown="startZoom(-1)" 
+                                    onmouseup="stopZoom()" 
+                                    onmouseleave="stopZoom()"
+                                    ontouchstart="startZoom(-1)" 
+                                    ontouchend="stopZoom()">줌 아웃</button>
+                            <button class="btn-action" 
+                                    onmousedown="startZoom(1)" 
+                                    onmouseup="stopZoom()" 
+                                    onmouseleave="stopZoom()"
+                                    ontouchstart="startZoom(1)" 
+                                    ontouchend="stopZoom()">줌 인</button>
                             <div class="zoom-range">
-                                <input type="range" id="zoomRange" min="0" max="100" value="50" onchange="setZoomRange(this.value)">
+                                <input type="range" id="zoomRange" min="0" max="100" value="50" 
+                                       oninput="updateZoomValue(this.value)" 
+                                       onchange="setZoomRange(this.value)">
                                 <span id="zoomValue">50%</span>
                             </div>
                         </div>
@@ -136,6 +193,7 @@
             <h3>시스템 로그</h3>
             <div class="log-container" id="logContainer">
                 <div class="log-entry">시스템이 초기화되었습니다.</div>
+                <div class="log-entry">WebRTC URL: {{ webrtc_url }}</div>
             </div>
             <button class="btn-secondary clear-log" onclick="clearLog()">로그 지우기</button>
         </section>
