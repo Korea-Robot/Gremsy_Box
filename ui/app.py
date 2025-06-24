@@ -187,9 +187,14 @@ def camera_osd_mode():
 def gimbal_continuous_move():
     try:
         data = request.get_json()
-        yaw = float(data.get('yaw', 0))
-        pitch = float(data.get('pitch', 0))
-        roll = float(data.get('roll', 0))
+        pitch = float(data.get('yaw', 0))
+        roll = float(data.get('pitch', 0))
+        yaw = float(data.get('roll', 0))
+        
+        # 원래 되어있는 매핑기
+        # yaw = float(data.get('yaw', 0))
+        # pitch = float(data.get('pitch', 0))
+        # roll = float(data.get('roll', 0))
         
         logging.info(f"Gimbal continuous move - yaw: {yaw}, pitch: {pitch}, roll: {roll}")
         
