@@ -286,6 +286,51 @@ def gimbal_stop():
         logging.error(f"Gimbal stop error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
+        
+# 다음 API들을 app.py에 추가해주세요:
+
+@app.route('/api/camera/capture-image', methods=['POST'])
+def camera_capture_image():
+    try:
+        response = requests.post(
+            f"{GREMSY_API_BASE}/camera/capture-image",
+            headers={"Content-Type": "application/json"}
+        )
+        if response.status_code == 200:
+            return jsonify({"status": "success", "message": "이미지 캡처가 실행되었습니다."})
+        else:
+            return jsonify({"status": "error", "message": "이미지 캡처 실패"}), 500
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/camera/start-record', methods=['POST'])
+def camera_start_record():
+    try:
+        response = requests.post(
+            f"{GREMSY_API_BASE}/camera/start-record",
+            headers={"Content-Type": "application/json"}
+        )
+        if response.status_code == 200:
+            return jsonify({"status": "success", "message": "비디오 녹화가 시작되었습니다."})
+        else:
+            return jsonify({"status": "error", "message": "녹화 시작 실패"}), 500
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/camera/stop-record', methods=['POST'])
+def camera_stop_record():
+    try:
+        response = requests.post(
+            f"{GREMSY_API_BASE}/camera/stop-record",
+            headers={"Content-Type": "application/json"}
+        )
+        if response.status_code == 200:
+            return jsonify({"status": "success", "message": "비디오 녹화가 중지되었습니다."})
+        else:
+            return jsonify({"status": "error", "message": "녹화 중지 실패"}), 500
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 if __name__ == "__main__":
     # 환경변수에서 포트 읽기 (기본값: 7777)
     port = int(os.environ.get('PORT', 7777))

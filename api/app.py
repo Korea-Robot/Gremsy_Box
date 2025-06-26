@@ -1,4 +1,4 @@
-# app.py
+# 카메라 api.py
 
 from flask import Flask, request, jsonify
 from libs.payload_sdk import PayloadSdkInterface, param_type
