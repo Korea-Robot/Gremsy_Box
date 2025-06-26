@@ -324,7 +324,7 @@ def gimbal_continuous_move():
 
         response = requests.post(
             f"{GREMSY_API_BASE}/gimbal/continuousMove",
-            json={"yaw": yaw, "pitch": pitch, "roll": roll},
+            json={"pitch": pitch, "roll": roll,"yaw": yaw},
             headers={"Content-Type": "application/json"},
             timeout=5
         )
