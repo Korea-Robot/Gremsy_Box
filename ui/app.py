@@ -182,64 +182,104 @@ def camera_osd_mode():
         logging.error(f"Camera OSD mode error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# 짐벌 제어 API
-@app.route('/api/gimbal/continuous-move', methods=['POST'])
-def gimbal_continuous_move():
-    try:
-        data = request.get_json()
-        # pitch = float(data.get('yaw', 0))
-        # roll = float(data.get('pitch', 0))
-        # yaw = float(data.get('roll', 0))
+# # 짐벌 제어 API
+# @app.route('/api/gimbal/continuous-move', methods=['POST'])
+# def gimbal_continuous_move():
+#     try:
+#         data = request.get_json()
+#         # pitch = float(data.get('yaw', 0))
+#         # roll = float(data.get('pitch', 0))
+#         # yaw = float(data.get('roll', 0))
         
-        # 원래 되어있는 매핑기
-        yaw = float(data.get('yaw', 0))
-        pitch = float(data.get('pitch', 0))
-        roll = float(data.get('roll', 0))
+#         # 원래 되어있는 매핑기
+#         yaw = float(data.get('yaw', 0))
+#         pitch = float(data.get('pitch', 0))
+#         roll = float(data.get('roll', 0))
 
-        # # 축 매핑을 SDK에 맞게 조정 (예시)
-        # yaw = float(data.get('roll', 0))   # 입력 roll이 실제 yaw로 전달됨
-        # pitch = float(data.get('yaw', 0))  # 입력 yaw이 실제 pitch로 전달됨
-        # roll = float(data.get('pitch', 0)) # 입력 pitch가 실제 roll로 전달됨
+#         # # 축 매핑을 SDK에 맞게 조정 (예시)
+#         # yaw = float(data.get('roll', 0))   # 입력 roll이 실제 yaw로 전달됨
+#         # pitch = float(data.get('yaw', 0))  # 입력 yaw이 실제 pitch로 전달됨
+#         # roll = float(data.get('pitch', 0)) # 입력 pitch가 실제 roll로 전달됨
         
         
-        logging.info(f"[GIMBAL SEND] Input: yaw={data.get('yaw')}, pitch={data.get('pitch')}, roll={data.get('roll')}")
-        logging.info(f"[GIMBAL MAPPED] Sending to SDK - yaw: {yaw}, pitch: {pitch}, roll: {roll}")
+#         logging.info(f"[GIMBAL SEND] Input: yaw={data.get('yaw')}, pitch={data.get('pitch')}, roll={data.get('roll')}")
+#         logging.info(f"[GIMBAL MAPPED] Sending to SDK - yaw: {yaw}, pitch: {pitch}, roll: {roll}")
 
-        logging.info(f"Gimbal continuous move - yaw: {yaw}, pitch: {pitch}, roll: {roll}")
+#         logging.info(f"Gimbal continuous move - yaw: {yaw}, pitch: {pitch}, roll: {roll}")
         
-        response = requests.post(
-            f"{GREMSY_API_BASE}/gimbal/continuousMove",
-            json={"yaw": yaw, "pitch": pitch, "roll": roll},
-            # json={"yaw": yaw, "pitch": pitch, "roll": roll},
-            headers={"Content-Type": "application/json"},
-            timeout=5
-        )
+#         response = requests.post(
+#             f"{GREMSY_API_BASE}/gimbal/continuousMove",
+#             json={"yaw": yaw, "pitch": pitch, "roll": roll},
+#             # json={"yaw": yaw, "pitch": pitch, "roll": roll},
+#             headers={"Content-Type": "application/json"},
+#             timeout=5
+#         )
         
-        if response.status_code == 200:
-            if yaw == 0 and pitch == 0 and roll == 0:
-                return jsonify({"status": "success", "message": "짐벌 이동이 중지되었습니다."})
-            else:
-                return jsonify({"status": "success", "message": "짐벌 이동이 시작되었습니다."})
-        else:
-            logging.error(f"Gimbal API response error: {response.status_code} - {response.text}")
-            return jsonify({"status": "error", "message": "짐벌 제어 실패"}), 500
+#         if response.status_code == 200:
+#             if yaw == 0 and pitch == 0 and roll == 0:
+#                 return jsonify({"status": "success", "message": "짐벌 이동이 중지되었습니다."})
+#             else:
+#                 return jsonify({"status": "success", "message": "짐벌 이동이 시작되었습니다."})
+#         else:
+#             logging.error(f"Gimbal API response error: {response.status_code} - {response.text}")
+#             return jsonify({"status": "error", "message": "짐벌 제어 실패"}), 500
             
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Gimbal continuous move request error: {e}")
-        return jsonify({"status": "error", "message": f"API 요청 실패: {str(e)}"}), 500
-    except Exception as e:
-        logging.error(f"Gimbal continuous move error: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
+#     except requests.exceptions.RequestException as e:
+#         logging.error(f"Gimbal continuous move request error: {e}")
+#         return jsonify({"status": "error", "message": f"API 요청 실패: {str(e)}"}), 500
+#     except Exception as e:
+#         logging.error(f"Gimbal continuous move error: {e}")
+#         return jsonify({"status": "error", "message": str(e)}), 500
 
+# @app.route('/api/gimbal/position-move', methods=['POST'])
+# def gimbal_position_move():
+#     try:
+#         data = request.get_json()
+#         yaw = float(data.get('yaw', 0))
+#         pitch = float(data.get('pitch', 0))
+#         roll = float(data.get('roll', 0))
+        
+#         logging.info(f"Gimbal position move - yaw: {yaw}, pitch: {pitch}, roll: {roll}")
+        
+#         response = requests.post(
+#             f"{GREMSY_API_BASE}/gimbal/positionMove",
+#             json={"yaw": yaw, "pitch": pitch, "roll": roll},
+#             headers={"Content-Type": "application/json"},
+#             timeout=5
+#         )
+        
+#         if response.status_code == 200:
+#             return jsonify({"status": "success", "message": "짐벌 포지션 이동이 시작되었습니다."})
+#         else:
+#             logging.error(f"Gimbal position API response error: {response.status_code} - {response.text}")
+#             return jsonify({"status": "error", "message": "짐벌 포지션 이동 실패"}), 500
+            
+#     except requests.exceptions.RequestException as e:
+#         logging.error(f"Gimbal position move request error: {e}")
+#         return jsonify({"status": "error", "message": f"API 요청 실패: {str(e)}"}), 500
+#     except Exception as e:
+#         logging.error(f"Gimbal position move error: {e}")
+#         return jsonify({"status": "error", "message": str(e)}), 500
+
+
+# 짐벌 제어 API
 @app.route('/api/gimbal/position-move', methods=['POST'])
 def gimbal_position_move():
     try:
         data = request.get_json()
-        yaw = float(data.get('yaw', 0))
-        pitch = float(data.get('pitch', 0))
-        roll = float(data.get('roll', 0))
         
-        logging.info(f"Gimbal position move - yaw: {yaw}, pitch: {pitch}, roll: {roll}")
+        # 클라이언트 입력값
+        input_yaw = float(data.get('yaw', 0))
+        input_pitch = float(data.get('pitch', 0))
+        input_roll = float(data.get('roll', 0))
+        
+        # 축 매핑 수정: continuous-move와 동일하게 적용
+        yaw = input_roll      # 클라이언트 roll이 실제 yaw
+        pitch = input_yaw     # 클라이언트 yaw가 실제 pitch
+        roll = input_pitch    # 클라이언트 pitch가 실제 roll
+        
+        logging.info(f"[GIMBAL POSITION INPUT] Client sent - yaw={input_yaw}, pitch={input_pitch}, roll={input_roll}")
+        logging.info(f"[GIMBAL POSITION MAPPED] Sending to SDK - yaw={yaw}, pitch={pitch}, roll={roll}")
         
         response = requests.post(
             f"{GREMSY_API_BASE}/gimbal/positionMove",
@@ -259,6 +299,50 @@ def gimbal_position_move():
         return jsonify({"status": "error", "message": f"API 요청 실패: {str(e)}"}), 500
     except Exception as e:
         logging.error(f"Gimbal position move error: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/gimbal/continuous-move', methods=['POST'])
+def gimbal_continuous_move():
+    try:
+        data = request.get_json()
+        
+        # 클라이언트 입력값
+        input_yaw = float(data.get('yaw', 0))
+        input_pitch = float(data.get('pitch', 0))
+        input_roll = float(data.get('roll', 0))
+        
+        # 축 매핑 수정: 실제 동작에 맞게 재매핑
+        # 클라이언트 pitch → SDK roll
+        # 클라이언트 yaw → SDK pitch  
+        # 클라이언트 roll → SDK yaw
+        yaw = input_roll      # 클라이언트 roll이 실제 yaw
+        pitch = input_yaw     # 클라이언트 yaw가 실제 pitch
+        roll = input_pitch    # 클라이언트 pitch가 실제 roll
+        
+        logging.info(f"[GIMBAL INPUT] Client sent - yaw={input_yaw}, pitch={input_pitch}, roll={input_roll}")
+        logging.info(f"[GIMBAL MAPPED] Sending to SDK - yaw={yaw}, pitch={pitch}, roll={roll}")
+
+        response = requests.post(
+            f"{GREMSY_API_BASE}/gimbal/continuousMove",
+            json={"yaw": yaw, "pitch": pitch, "roll": roll},
+            headers={"Content-Type": "application/json"},
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            if yaw == 0 and pitch == 0 and roll == 0:
+                return jsonify({"status": "success", "message": "짐벌 이동이 중지되었습니다."})
+            else:
+                return jsonify({"status": "success", "message": "짐벌 이동이 시작되었습니다."})
+        else:
+            logging.error(f"Gimbal API response error: {response.status_code} - {response.text}")
+            return jsonify({"status": "error", "message": "짐벌 제어 실패"}), 500
+            
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Gimbal continuous move request error: {e}")
+        return jsonify({"status": "error", "message": f"API 요청 실패: {str(e)}"}), 500
+    except Exception as e:
+        logging.error(f"Gimbal continuous move error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/gimbal/reset', methods=['POST'])
