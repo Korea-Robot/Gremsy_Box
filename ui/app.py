@@ -187,20 +187,30 @@ def camera_osd_mode():
 def gimbal_continuous_move():
     try:
         data = request.get_json()
-        pitch = float(data.get('yaw', 0))
-        roll = float(data.get('pitch', 0))
-        yaw = float(data.get('roll', 0))
+        # pitch = float(data.get('yaw', 0))
+        # roll = float(data.get('pitch', 0))
+        # yaw = float(data.get('roll', 0))
         
         # 원래 되어있는 매핑기
-        # yaw = float(data.get('yaw', 0))
-        # pitch = float(data.get('pitch', 0))
-        # roll = float(data.get('roll', 0))
+        yaw = float(data.get('yaw', 0))
+        pitch = float(data.get('pitch', 0))
+        roll = float(data.get('roll', 0))
+
+        # # 축 매핑을 SDK에 맞게 조정 (예시)
+        # yaw = float(data.get('roll', 0))   # 입력 roll이 실제 yaw로 전달됨
+        # pitch = float(data.get('yaw', 0))  # 입력 yaw이 실제 pitch로 전달됨
+        # roll = float(data.get('pitch', 0)) # 입력 pitch가 실제 roll로 전달됨
         
+        
+        logging.info(f"[GIMBAL SEND] Input: yaw={data.get('yaw')}, pitch={data.get('pitch')}, roll={data.get('roll')}")
+        logging.info(f"[GIMBAL MAPPED] Sending to SDK - yaw: {yaw}, pitch: {pitch}, roll: {roll}")
+
         logging.info(f"Gimbal continuous move - yaw: {yaw}, pitch: {pitch}, roll: {roll}")
         
         response = requests.post(
             f"{GREMSY_API_BASE}/gimbal/continuousMove",
             json={"yaw": yaw, "pitch": pitch, "roll": roll},
+            # json={"yaw": yaw, "pitch": pitch, "roll": roll},
             headers={"Content-Type": "application/json"},
             timeout=5
         )
