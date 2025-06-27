@@ -1,0 +1,172 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a1a1a;
+    color: #fff;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #4CAF50;
+}
+
+h2 {
+    color: #2196F3;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #2196F3;
+    padding-bottom: 5px;
+}
+
+h3 {
+    color: #FFC107;
+    margin-bottom: 10px;
+}
+
+.video-section {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+#video {
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    border: 2px solid #333;
+    border-radius: 8px;
+    background-color: #000;
+}
+
+.stream-controls {
+    margin-top: 15px;
+}
+
+.control-section {
+    background-color: #2a2a2a;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid #444;
+}
+
+.control-group {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #333;
+    border-radius: 6px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+button:active {
+    background-color: #3d8b40;
+}
+
+select {
+    background-color: #444;
+    color: white;
+    border: 1px solid #666;
+    padding: 8px 12px;
+    margin: 5px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+input[type="range"] {
+    width: 200px;
+    margin: 5px 10px;
+    accent-color: #4CAF50;
+}
+
+.focus-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.gimbal-controls {
+    background-color: #444;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.gimbal-axis {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 10px;
+}
+
+.gimbal-axis label {
+    width: 50px;
+    font-weight: bold;
+}
+
+.gimbal-axis span {
+    min-width: 50px;
+    text-align: right;
+    color: #FFC107;
+}
+
+#status {
+    background-color: #333;
+    padding: 15px;
+    border-radius: 6px;
+    margin-top: 20px;
+    min-height: 50px;
+    border-left: 4px solid #2196F3;
+}
+
+.success {
+    color: #4CAF50;
+}
+
+.error {
+    color: #f44336;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .focus-controls {
+        flex-direction: column;
+    }
+    
+    .gimbal-axis {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    input[type="range"] {
+        width: 100%;
+    }
+}

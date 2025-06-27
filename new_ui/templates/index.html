@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIO 카메라 & 짐벌 제어</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>VIO 카메라 & 짐벌 제어</h1>
+        
+        <!-- WebRTC Video Stream -->
+        <div class="video-section">
+            <h2>실시간 스트림</h2>
+            <video id="video" autoplay muted playsinline></video>
+            <div class="stream-controls">
+                <button onclick="startStream()">스트림 시작</button>
+                <button onclick="stopStream()">스트림 정지</button>
+            </div>
+        </div>
+
+        <!-- Camera Controls -->
+        <div class="control-section">
+            <h2>카메라 제어</h2>
+            
+            <div class="control-group">
+                <h3>줌 제어</h3>
+                <button onclick="zoomStep(1)">줌 인</button>
+                <button onclick="zoomStep(-1)">줌 아웃</button>
+                <input type="range" id="zoomRange" min="0" max="100" value="0" onchange="zoomRange(this.value)">
+                <span id="zoomValue">0%</span>
+            </div>
+
+            <div class="control-group">
+                <h3>뷰 소스</h3>
+                <select id="viewSrc" onchange="changeViewSrc(this.value)">
+                    <option value="0">EO/IR 통합</option>
+                    <option value="1">EO</option>
+                    <option value="2">IR</option>
+                    <option value="3">IR/EO 전환</option>
+                    <option value="4">동기화 뷰</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <h3>포커스</h3>
+                <select id="focusMode" onchange="setFocusMode(this.value)">
+                    <option value="0">수동</option>
+                    <option value="1">줌 트리거</option>
+                    <option value="2">자동 근거리</option>
+                    <option value="3">자동 원거리</option>
+                </select>
+                <button onclick="autoFocus()">자동 포커스</button>
+                <div class="focus-controls">
+                    <button onclick="focusContinuous(-1)">포커스 안쪽</button>
+                    <button onclick="focusContinuous(0)">정지</button>
+                    <button onclick="focusContinuous(1)">포커스 무한대</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>IR 팔레트</h3>
+                <select id="irPalette" onchange="setIrPalette(this.value)">
+                    <option value="1">화이트 핫</option>
+                    <option value="2">블랙 핫</option>
+                    <option value="3">레인보우</option>
+                    <option value="4">팔레트 4</option>
+                    <option value="5">팔레트 5</option>
+                    <option value="6">팔레트 6</option>
+                    <option value="7">팔레트 7</option>
+                    <option value="8">팔레트 8</option>
+                    <option value="9">팔레트 9</option>
+                    <option value="10">팔레트 10</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <h3>기타 설정</h3>
+                <button onclick="toggleFlip()">플립 모드</button>
+                <select id="osdMode" onchange="setOsdMode(this.value)">
+                    <option value="0">OSD 비활성화</option>
+                    <option value="1">디버그 모드</option>
+                    <option value="2">상태 정보</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Gimbal Controls -->
+        <div class="control-section">
+            <h2>짐벌 제어</h2>
+            
+            <div class="control-group">
+                <h3>짐벌 모드</h3>
+                <select id="gimbalMode" onchange="setGimbalMode(this.value)">
+                    <option value="0">OFF</option>
+                    <option value="1">LOCK</option>
+                    <option value="2">FOLLOW</option>
+                    <option value="4">RESET</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <h3>짐벌 조작</h3>
+                <div class="gimbal-controls">
+                    <div class="gimbal-axis">
+                        <label>Yaw:</label>
+                        <input type="range" id="yawSlider" min="-180" max="180" value="0" oninput="updateGimbalValues()">
+                        <span id="yawValue">0°</span>
+                    </div>
+                    <div class="gimbal-axis">
+                        <label>Pitch:</label>
+                        <input type="range" id="pitchSlider" min="-90" max="90" value="0" oninput="updateGimbalValues()">
+                        <span id="pitchValue">0°</span>
+                    </div>
+                    <div class="gimbal-axis">
+                        <label>Roll:</label>
+                        <input type="range" id="rollSlider" min="-180" max="180" value="0" oninput="updateGimbalValues()">
+                        <span id="rollValue">0°</span>
+                    </div>
+                </div>
+                <button onclick="moveGimbalPosition()">위치 이동</button>
+                <button onclick="stopGimbal()">정지</button>
+            </div>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const WEBRTC_URL = "{{ webrtc_url }}";
+        const ROBOT_IP = "{{ robot_ip }}";
+    </script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
