@@ -41,7 +41,7 @@ logging.basicConfig(level=logging.INFO)
 # 설정
 GREMSY_API_BASE = "http://localhost:8000"
 ROBOT_IP = "192.168.168.105"
-MEDIAMTX_HTTP_URL = f"http://{ROBOT_IP}:8889/gremsy/"
+MEDIAMTX_HTTP_URL = f"http://{ROBOT_IP}:8889/eo-ir-vio/"
 
 @app.route('/')
 def index():
