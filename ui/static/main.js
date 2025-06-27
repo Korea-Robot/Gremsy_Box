@@ -196,15 +196,15 @@ function moveGimbalPosition() {
     const pitch = parseFloat(document.getElementById('pitch').value) || 0;
     const roll = parseFloat(document.getElementById('roll').value) || 0;
     
-    apiCall('gimbal/positionMove', { yaw, pitch, roll });
+    apiCall('gimbal/positionMove', {pitch, roll, yaw });
 }
 
 function moveGimbal(yaw, pitch, roll) {
-    apiCall('gimbal/move', { yaw, pitch, roll });
+    apiCall('gimbal/move', { pitch, roll, yaw });
 }
 
 function stopGimbal() {
-    apiCall('gimbal/move', { yaw: 0, pitch: 0, roll: 0 });
+    apiCall('gimbal/move', {  pitch: 0, roll: 0,yaw: 0 });
 }
 
 // 키보드 단축키
@@ -220,11 +220,11 @@ document.addEventListener('keydown', function(e) {
             break;
         case 'ArrowLeft':
             e.preventDefault();
-            moveGimbal(0, -5, 0);
+            moveGimbal(0, 0, -5);
             break;
         case 'ArrowRight':
             e.preventDefault();
-            moveGimbal(0, 5, 0);
+            moveGimbal(0, 0, 5);
             break;
         case 'Space':
             e.preventDefault();
