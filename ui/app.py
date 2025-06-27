@@ -9,6 +9,8 @@ logging.basicConfig(level=logging.INFO)
 # 환경변수에서 API 포트 가져오기 (기본값: 6783)
 API_PORT = int(os.environ.get('API_PORT', 6783))
 
+# api는 전부 로컬에서 동작해야함.!!!
+
 @app.route('/')
 def index():
     # 클라이언트의 요청 호스트에서 IP만 추출해서 동적 webrtc 할당
@@ -31,7 +33,7 @@ def index():
 def camera_proxy(endpoint):
     try:
         client_host = request.host.split(':')[0]
-        api_url = f"http://{client_host}:{API_PORT}/camera/{endpoint}"
+        api_url = f"http://127.0.0.1:{API_PORT}/camera/{endpoint}"
         
         response = requests.post(
             api_url,
@@ -52,7 +54,7 @@ def camera_proxy(endpoint):
 def gimbal_proxy(endpoint):
     try:
         client_host = request.host.split(':')[0]
-        api_url = f"http://{client_host}:{API_PORT}/gimbal/{endpoint}"
+        api_url = f"http://127.0.0.1:{API_PORT}/gimbal/{endpoint}"
         
         response = requests.post(
             api_url,
