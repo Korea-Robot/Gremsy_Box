@@ -14,8 +14,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 애플리케이션 코드 복사
 COPY . .
 
-# 포트 노출
+ENV PORT=7777
+ENV API_PORT=6783
+
 EXPOSE 7777
 
-# Flask 서버 실행
 CMD ["python", "app.py"]

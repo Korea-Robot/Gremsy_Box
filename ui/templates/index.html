@@ -3,203 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gremsy Box</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Camera & Gimbal Control</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Gremsy Box : 카메라 & 짐벌 제어 시스템</h1>
-            <div class="status" id="status">연결 대기 중...</div>
+            <h1>📹 Camera & Gimbal Control</h1>
+            <div class="status">
+                <span id="connection-status">🔴 연결 대기중</span>
+                <span>API: {{ robot_ip }}:{{ api_port }}</span>
+            </div>
         </header>
 
-        <main>
-            <!-- 비디오 스트림 섹션 -->
-            <section class="video-section">
+        <div class="content">
+            <!-- WebRTC 스트림 -->
+            <div class="video-section">
+                <h2>📺 Live Stream</h2>
                 <div class="video-container">
-                    <!-- WebRTC 스트림을 위한 iframe -->
-                    <iframe id="webrtcStream" 
-                            src="{{ webrtc_url }}" 
-                            width="640" 
-                            height="480" 
-                            allow="autoplay; fullscreen; camera; microphone"
-                            style="border: none;">
-                    </iframe>
-                    
-                    <!-- 대체 비디오 태그 (iframe 실패시) -->
-                    <video id="videoStream"
-                           width="640" 
-                           height="480"
-                           autoplay 
-                           playsinline
-                           style="display: none;">
-                    </video>
-                    
-                    <div class="stream-overlay">
-                        <div class="stream-info">Live Stream - {{ robot_ip }}</div>
-                        <div class="stream-url">{{ webrtc_url }}</div>
-                    </div>
+                    <video id="webrtc-video" autoplay muted controls></video>
                 </div>
-            </section>
+            </div>
 
-            <!-- 제어 패널 -->
-            <section class="controls-section">
-
-                <!-- 짐벌 제어 -->
+            <!-- 카메라 제어 -->
+            <div class="control-section">
+                <h2>📷 Camera Control</h2>
+                
                 <div class="control-group">
-                    <h3>짐벌 제어</h3>
-                    
-                    <!-- 방향 제어 패드 -->
-                    <div class="control-item">
-                        <label>방향 제어:</label>
-                        <div class="gimbal-pad">
-                            <div class="direction-pad">
-                                <!-- Pitch Up (위) - Pitch 음수값 -->
-                                <button class="dir-btn up" 
-                                        onmousedown="startGimbalMove(0, -10)" 
-                                        onmouseup="stopGimbal()" 
-                                        onmouseleave="stopGimbal()"
-                                        ontouchstart="startGimbalMove(0, -10)" 
-                                        ontouchend="stopGimbal()">↑</button>
-                                
-                                <div class="middle-row">
-                                    <!-- Yaw Left (좌) - Yaw 음수값 -->
-                                    <button class="dir-btn left" 
-                                            onmousedown="startGimbalMove(-10, 0)" 
-                                            onmouseup="stopGimbal()" 
-                                            onmouseleave="stopGimbal()"
-                                            ontouchstart="startGimbalMove(-10, 0)" 
-                                            ontouchend="stopGimbal()">←</button>
-                                    
-                                    <button class="dir-btn center" onclick="resetGimbal()">⌂</button>
-                                    
-                                    <!-- Yaw Right (우) - Yaw 양수값 -->
-                                    <button class="dir-btn right" 
-                                            onmousedown="startGimbalMove(10, 0)" 
-                                            onmouseup="stopGimbal()" 
-                                            onmouseleave="stopGimbal()"
-                                            ontouchstart="startGimbalMove(10, 0)" 
-                                            ontouchend="stopGimbal()">→</button>
-                                </div>
-                                
-                                <!-- Pitch Down (아래) - Pitch 양수값 -->
-                                <button class="dir-btn down" 
-                                        onmousedown="startGimbalMove(0, 10)" 
-                                        onmouseup="stopGimbal()" 
-                                        onmouseleave="stopGimbal()"
-                                        ontouchstart="startGimbalMove(0, 10)" 
-                                        ontouchend="stopGimbal()">↓</button>
-                            </div>
-                        </div>
+                    <h3>🔍 Zoom</h3>
+                    <div class="button-group">
+                        <button onclick="cameraZoomStep(1)">줌 인 (Step)</button>
+                        <button onclick="cameraZoomStep(-1)">줌 아웃 (Step)</button>
                     </div>
-
-                    <!-- 정밀 제어 -->
-                    <div class="control-item">
-                        <label>정밀 제어:</label>
-                        <div class="precision-controls">
-                            <div class="slider-group">
-                                <label>Yaw (좌우): <span id="yawValue">0°</span></label>
-                                <input type="range" id="yawSlider" min="-180" max="180" value="0" 
-                                       oninput="updateGimbalValue('yaw', this.value)">
-                            </div>
-                            <div class="slider-group">
-                                <label>Pitch (상하): <span id="pitchValue">0°</span></label>
-                                <input type="range" id="pitchSlider" min="-90" max="90" value="0" 
-                                       oninput="updateGimbalValue('pitch', this.value)">
-                            </div>
-                            <div class="gimbal-actions">
-                                <button class="btn-primary" onclick="applyGimbalPosition()">위치 적용</button>
-                                <button class="btn-danger" onclick="resetGimbal()">리셋</button>
-                                <button class="btn-warning" onclick="stopGimbal()">정지</button>
-                            </div>
-                        </div>
+                    <div class="button-group">
+                        <button onclick="cameraZoomContinuous(1)">줌 인 (연속)</button>
+                        <button onclick="cameraZoomContinuous(-1)">줌 아웃 (연속)</button>
+                    </div>
+                    <div class="range-group">
+                        <label>줌 범위 (0-100%):</label>
+                        <input type="range" id="zoom-range" min="0" max="100" value="0" 
+                               onchange="cameraZoomRange(this.value)">
+                        <span id="zoom-value">0%</span>
                     </div>
                 </div>
 
-                <!-- 카메라 제어 -->
                 <div class="control-group">
-                    <h3>카메라 제어</h3>
-                    
-                    <!-- 뷰 소스 변경 -->
-                    <div class="control-item">
-                        <label>뷰 소스:</label>
-                        <div class="button-group">
-                            <button class="btn-secondary" onclick="changeViewSource(0)">통합</button>
-                            <button class="btn-secondary" onclick="changeViewSource(1)">EO</button>
-                            <button class="btn-secondary" onclick="changeViewSource(2)">IR</button>
-                            <button class="btn-secondary" onclick="changeViewSource(3)">전환</button>
-                            <button class="btn-secondary" onclick="changeViewSource(4)">동기화</button>
-                        </div>
-                    </div>
+                    <h3>👁️ View Source</h3>
+                    <select onchange="changeViewSource(this.value)">
+                        <option value="0">EO/IR 통합</option>
+                        <option value="1">EO</option>
+                        <option value="2">IR</option>
+                        <option value="3">IR/EO 전환</option>
+                        <option value="4">동기화 뷰</option>
+                    </select>
+                </div>
 
-                    <!-- IR 팔레트 -->
-                    <div class="control-item">
-                        <label>IR 팔레트:</label>
-                        <select id="irPalette" onchange="changeIRPalette()">
-                            <option value="1">화이트 핫</option>
-                            <option value="2">블랙 핫</option>
-                            <option value="3">레인보우</option>
-                            <option value="4">아이언</option>
-                            <option value="5">라바</option>
-                            <option value="6">아틱</option>
-                            <option value="7">글로우</option>
-                            <option value="8">플랑커</option>
-                            <option value="9">세픽</option>
-                            <option value="10">티타늄</option>
+                <div class="control-group">
+                    <h3>🎯 Focus</h3>
+                    <select onchange="setFocusMode(this.value)">
+                        <option value="0">수동</option>
+                        <option value="1">줌 트리거</option>
+                        <option value="2">자동 근거리</option>
+                        <option value="3">자동 원거리</option>
+                    </select>
+                    <div class="button-group">
+                        <button onclick="focusContinuous(-1)">안쪽</button>
+                        <button onclick="focusContinuous(0)">정지</button>
+                        <button onclick="focusContinuous(1)">무한대</button>
+                        <button onclick="autoFocus()">자동 포커스</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>🌈 IR Palette</h3>
+                    <select onchange="setIRPalette(this.value)">
+                        <option value="1">Palette 1</option>
+                        <option value="2">Palette 2</option>
+                        <option value="3">Palette 3</option>
+                        <option value="4">Palette 4</option>
+                        <option value="5">Palette 5</option>
+                        <option value="6">Palette 6</option>
+                        <option value="7">Palette 7</option>
+                        <option value="8">Palette 8</option>
+                        <option value="9">Palette 9</option>
+                        <option value="10">Palette 10</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <h3>⚙️ Settings</h3>
+                    <div class="button-group">
+                        <select onchange="setOSDMode(this.value)">
+                            <option value="0">OSD 비활성화</option>
+                            <option value="1">디버그 모드</option>
+                            <option value="2">상태 정보</option>
+                        </select>
+                        <select onchange="setFlipMode(this.value)">
+                            <option value="3">플립 끔</option>
+                            <option value="2">플립 켬</option>
                         </select>
                     </div>
+                </div>
+            </div>
 
-                    <!-- 줌 제어 -->
-                    <div class="control-item">
-                        <label>줌 제어:</label>
-                        <div class="zoom-controls">
-                            <button class="btn-action" 
-                                    onmousedown="startZoom(-1)" 
-                                    onmouseup="stopZoom()" 
-                                    onmouseleave="stopZoom()"
-                                    ontouchstart="startZoom(-1)" 
-                                    ontouchend="stopZoom()">줌 아웃</button>
-                            <button class="btn-action" 
-                                    onmousedown="startZoom(1)" 
-                                    onmouseup="stopZoom()" 
-                                    onmouseleave="stopZoom()"
-                                    ontouchstart="startZoom(1)" 
-                                    ontouchend="stopZoom()">줌 인</button>
-                            <div class="zoom-range">
-                                <input type="range" id="zoomRange" min="0" max="100" value="50" 
-                                       oninput="updateZoomValue(this.value)" 
-                                       onchange="setZoomRange(this.value)">
-                                <span id="zoomValue">50%</span>
-                            </div>
-                        </div>
-                    </div>
+            <!-- 짐벌 제어 -->
+            <div class="control-section">
+                <h2>🎮 Gimbal Control</h2>
+                
+                <div class="control-group">
+                    <h3>🔧 Mode</h3>
+                    <select onchange="setGimbalMode(this.value)">
+                        <option value="0">OFF</option>
+                        <option value="1">LOCK</option>
+                        <option value="2">FOLLOW</option>
+                        <option value="4">RESET</option>
+                    </select>
+                </div>
 
-                    <!-- OSD 모드 -->
-                    <div class="control-item">
-                        <label>OSD 모드:</label>
-                        <div class="button-group">
-                            <button class="btn-secondary" onclick="setOSDMode(0)">끄기</button>
-                            <button class="btn-secondary" onclick="setOSDMode(1)">디버그</button>
-                            <button class="btn-secondary" onclick="setOSDMode(2)">상태정보</button>
+                <div class="control-group">
+                    <h3>📍 Position</h3>
+                    <div class="position-control">
+                        <div>
+                            <label>Yaw:</label>
+                            <input type="number" id="yaw" value="0" step="0.1">
                         </div>
+                        <div>
+                            <label>Pitch:</label>
+                            <input type="number" id="pitch" value="0" step="0.1">
+                        </div>
+                        <div>
+                            <label>Roll:</label>
+                            <input type="number" id="roll" value="0" step="0.1">
+                        </div>
+                        <button onclick="moveGimbalPosition()">위치 이동</button>
                     </div>
                 </div>
 
-            </section>
-        </main>
-
-        <!-- 로그 영역 -->
-        <section class="log-section">
-            <h3>시스템 로그</h3>
-            <div class="log-container" id="logContainer">
-                <div class="log-entry">시스템이 초기화되었습니다.</div>
-                <div class="log-entry">WebRTC URL: {{ webrtc_url }}</div>
+                <div class="control-group">
+                    <h3>⚡ Move Control</h3>
+                    <div class="joystick-area">
+                        <div class="movement-buttons">
+                            <button class="move-btn" data-yaw="5" data-pitch="0" data-roll="0">↑</button>
+                            <div class="middle-row">
+                                <button class="move-btn" data-yaw="0" data-pitch="-5" data-roll="0">←</button>
+                                <button class="stop-btn" onclick="stopGimbal()">⏹️</button>
+                                <button class="move-btn" data-yaw="0" data-pitch="5" data-roll="0">→</button>
+                            </div>
+                            <button class="move-btn" data-yaw="-5" data-pitch="0" data-roll="0">↓</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button class="btn-secondary clear-log" onclick="clearLog()">로그 지우기</button>
-        </section>
+        </div>
     </div>
 
-    <!-- WebRTC + UI 제어 로직 -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // 전역 변수
+        window.WEBRTC_URL = "{{ webrtc_url }}";
+        window.API_BASE = "/api";
+    </script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 </html>
