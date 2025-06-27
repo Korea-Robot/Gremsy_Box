@@ -1,9 +1,9 @@
-# 카메라 api.py
+# app.py
 
+import os
 from flask import Flask, request, jsonify
 from libs.payload_sdk import PayloadSdkInterface, param_type
 from libs.payload_define import *
-import os
 
 # 플라스크 서버생성 
 app = Flask(__name__)
@@ -71,7 +71,7 @@ def camera_set_osd_mode():
     return jsonify({"message": "OSD 모드가 설정되었습니다."})
 
 @app.route("/camera/set-flip-mode", methods=["POST"])
-def camera_set_flip_mode():
+def camera_flip_mode():
     flip = request.json.get("flipMode")
     sdk.setPayloadCameraParam("CAMERA_FLIP_MODE", int(flip), param_type.PARAM_TYPE_UINT32)
     return jsonify({"message": "플립 모드가 설정되었습니다."})
@@ -106,6 +106,7 @@ def camera_set_ffc_mode():
 def camera_trigger_ffc():
     sdk.setPayloadCameraFFCTrigg()
     return jsonify({"message": "FFC가 트리거되었습니다."})
+
 
 # ------------------------ GimbalController ------------------------
 
