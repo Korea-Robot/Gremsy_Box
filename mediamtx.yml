@@ -11,7 +11,7 @@ webrtc: yes
 webrtcAddress: :8889
 
 paths:
-  gremsy:
-    source: rtsp://192.168.168.240:554/eo-ir-vio
+  eo-ir-vio:
+    source: rtsp://192.168.168.240:554/payload
     sourceOnDemand: false   # 컨테이너 기동 시 바로 풀링
 
