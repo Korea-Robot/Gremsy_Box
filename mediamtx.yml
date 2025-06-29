@@ -1,7 +1,7 @@
 rtspAddress: :8554
 rtspTransports: [tcp]       # TCP 전용 풀링
-# hlsAddress: :8888
-# #hlsEnabled: true            # HLS 켜기
+hlsAddress: :8888
+hlsEnabled: true            # HLS 켜기
 # hlsAlwaysRemux: true        # 항상 세그먼트 생성
 # hlsSegmentCount: 14          # 충분한 세그먼트 확보
 # hlsSegmentDuration: 1s
@@ -12,6 +12,6 @@ webrtcAddress: :8889
 
 paths:
   gremsy:
-    source: rtsp://192.168.168.240:554/payload
+    source: rtsp://192.168.168.240:554/eo-ir-vio
     sourceOnDemand: false   # 컨테이너 기동 시 바로 풀링
 
