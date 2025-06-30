@@ -13,7 +13,8 @@
         <!-- WebRTC Video Stream -->
         <div class="video-section">
             <h2>실시간 스트림</h2>
-            <video id="video" autoplay muted playsinline></video>
+            {% comment %} <video id="video" autoplay muted playsinline></video> {% endcomment %}
+            <iframe src="http://intel-orin-04:8889/eo-ir-vio/" width="600" height="400"></iframe>
             <div class="stream-controls">
                 <button onclick="startStream()">스트림 시작</button>
                 <button onclick="stopStream()">스트림 정지</button>
