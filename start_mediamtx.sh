@@ -1,5 +1,6 @@
 
 docker run --rm -it \
+    -d --restart unless-stopped \
     --network=host \
     -v "$(pwd)/mediamtx.yml":/mediamtx.yml:ro \
     bluenviron/mediamtx:latest
