@@ -1,5 +1,5 @@
 
-docker run --rm -it \
+docker run -it \
     -d --restart unless-stopped \
     --network=host \
     -v "$(pwd)/mediamtx.yml":/mediamtx.yml:ro \
