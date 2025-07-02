@@ -1,0 +1,5 @@
+# ui/requirements.txt
+Flask==2.3.2
+requests==2.31.0
+gunicorn==20.1.0
+opency-python

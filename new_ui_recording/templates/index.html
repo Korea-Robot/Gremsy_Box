@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIO 카메라 제어</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; }
+        button { margin: 5px; padding: 8px 12px; }
+        input, select { margin: 5px; padding: 5px; }
+        iframe { border: 1px solid #ddd; }
+        .status { margin: 10px 0; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>VIO 카메라 제어</h1>
+    
+    <!-- Video Stream -->
+    <div class="section">
+        <h2>실시간 스트림</h2>
+        <iframe id="webrtcFrame" src="{{ webrtc_url }}" width="800" height="600" frameborder="0"></iframe>
+        <br>
+        <button onclick="startStream()">스트림 시작</button>
+        <button onclick="stopStream()">스트림 정지</button>
+    </div>
+
+    <!-- Recording Controls -->
+    <div class="section">
+        <h2>녹화 제어</h2>
+        <div>
+            <label>RTSP URL:</label>
+            <input type="text" id="rtspUrl" value="rtsp://192.168.168.240:554/payload" style="width: 300px;">
+        </div>
+        <div>
+            <label>저장 경로:</label>
+            <input type="text" id="outputPath" value="/app/data/recordings" style="width: 300px;">
+        </div>
+        <div>
+            <button onclick="startRecording()">녹화 시작</button>
+            <button onclick="stopRecording()">녹화 정지</button>
+            <button onclick="checkRecordingStatus()">녹화 상태 확인</button>
+        </div>
+        <div id="recordingStatus" class="status">녹화 상태: 대기 중</div>
+    </div>
+
+    <!-- Image Capture -->
+    <div class="section">
+        <h2>이미지 캡처</h2>
+        <div>
+            <label>RTSP URL:</label>
+            <input type="text" id="captureRtspUrl" value="rtsp://192.168.168.240:554/payload" style="width: 300px;">
+        </div>
+        <div>
+            <label>저장 경로:</label>
+            <input type="text" id="capturePath" value="/app/data/captures" style="width: 300px;">
+        </div>
+        <div>
+            <button onclick="captureImage()">이미지 캡처</button>
+        </div>
+        <div id="captureStatus" class="status">캡처 상태: 대기 중</div>
+    </div>
+
+    <script>
+        const webrtcUrl = "{{ webrtc_url }}";
+        
+        // 스트림 제어
+        function startStream() {
+            document.getElementById('webrtcFrame').src = webrtcUrl;
+        }
+        
+        function stopStream() {
+            document.getElementById('webrtcFrame').src = '';
+        }
+
+        // 녹화 시작
+        function startRecording() {
+            const rtspUrl = document.getElementById('rtspUrl').value;
+            const outputPath = document.getElementById('outputPath').value;
+            
+            fetch('/api/camera/rtsp_video_recording', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'start',
+                    rtsp_url: rtspUrl,
+                    output_path: outputPath
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('recordingStatus').innerHTML = 
+                    `녹화 상태: ${data.status || data.error}`;
+                console.log('Recording start response:', data);
+            })
+            .catch(error => {
+                document.getElementById('recordingStatus').innerHTML = 
+                    `녹화 상태: 오류 - ${error.message}`;
+                console.error('Recording start error:', error);
+            });
+        }
+
+        // 녹화 정지
+        function stopRecording() {
+            fetch('/api/camera/rtsp_video_recording', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'stop'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('recordingStatus').innerHTML = 
+                    `녹화 상태: ${data.status || data.error}`;
+                console.log('Recording stop response:', data);
+            })
+            .catch(error => {
+                document.getElementById('recordingStatus').innerHTML = 
+                    `녹화 상태: 오류 - ${error.message}`;
+                console.error('Recording stop error:', error);
+            });
+        }
+
+        // 녹화 상태 확인
+        function checkRecordingStatus() {
+            fetch('/api/camera/recording_status')
+            .then(response => response.json())
+            .then(data => {
+                const status = data.is_recording ? '녹화 중' : '대기 중';
+                document.getElementById('recordingStatus').innerHTML = 
+                    `녹화 상태: ${status} (스레드: ${data.thread_alive})`;
+                console.log('Recording status:', data);
+            })
+            .catch(error => {
+                document.getElementById('recordingStatus').innerHTML = 
+                    `녹화 상태: 상태 확인 오류 - ${error.message}`;
+                console.error('Status check error:', error);
+            });
+        }
+
+        // 이미지 캡처
+        function captureImage() {
+            const rtspUrl = document.getElementById('captureRtspUrl').value;
+            const outputPath = document.getElementById('capturePath').value;
+            
+            document.getElementById('captureStatus').innerHTML = '캡처 상태: 처리 중...';
+            
+            fetch('/api/camera/capture_image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    rtsp_url: rtspUrl,
+                    output_path: outputPath
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'image captured') {
+                    document.getElementById('captureStatus').innerHTML = 
+                        `캡처 상태: 완료 - ${data.filename}`;
+                } else {
+                    document.getElementById('captureStatus').innerHTML = 
+                        `캡처 상태: 오류 - ${data.error}`;
+                }
+                console.log('Capture response:', data);
+            })
+            .catch(error => {
+                document.getElementById('captureStatus').innerHTML = 
+                    `캡처 상태: 오류 - ${error.message}`;
+                console.error('Capture error:', error);
+            });
+        }
+
+        // 페이지 로드 시 스트림 자동 시작
+        window.addEventListener('DOMContentLoaded', startStream);
+    </script>
+</body>
+</html>
