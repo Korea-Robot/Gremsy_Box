@@ -97,6 +97,9 @@ from datetime import datetime  # 저장 파일에 타임스탬프를 부여하�
 import os
 from flask import request, jsonify  # Flask의 HTTP 요청 핸들링을 위해 import
 
+# 녹화 관련 전역 변수
+recording_thread = None
+recording_flag = False
 
 # RTSP 스트림 녹화 함수
 def record_rtsp_stream(rtsp_url, output_path):
